@@ -1,29 +1,37 @@
+// vite.config.ts
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import nodePolyfills from 'vite-plugin-node-polyfills';
+import path from 'path';
+import inject from '@rollup/plugin-inject';
 
 export default defineConfig({
   plugins: [
     react(),
-    // Polyfills Buffer, process, and other Node globals for both dev + build
-    nodePolyfills({
-      // Optional: helps when imports use node:protocol style
-      protocolImports: true,
-    }),
   ],
+  resolve: {
+    alias: {
+      buffer: 'buffer',
+    },
+  },
   optimizeDeps: {
-    // Ensure buffer is pre-bundled during dev
-    include: ['buffer'],
+    include: ['buffer', 'bolt11', 'bitcoinjs-lib'],
     esbuildOptions: {
       define: {
         global: 'globalThis',
       },
+      // This is the key for dev pre-bundling
+      inject: [path.resolve(__dirname, 'src/shims-esbuild.js')],
     },
     exclude: ['lucide-react'],
   },
-  resolve: {
-    alias: {
-      buffer: 'buffer',
+  build: {
+    rollupOptions: {
+      // This helps in build output when Buffer is referenced
+      plugins: [
+        inject({
+          Buffer: ['buffer', 'Buffer'],
+        }),
+      ],
     },
   },
 });
