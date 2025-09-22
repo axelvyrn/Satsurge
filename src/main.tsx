@@ -1,4 +1,3 @@
-// main.tsx — these must be the first lines
 import { Buffer } from 'buffer';
 
 declare global {
