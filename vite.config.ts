@@ -1,11 +1,18 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import inject from '@rollup/plugin-inject'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import nodePolyfills from 'vite-plugin-node-polyfills';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Polyfills Buffer, process, and other Node globals for both dev + build
+    nodePolyfills({
+      // Optional: helps when imports use node:protocol style
+      protocolImports: true,
+    }),
+  ],
   optimizeDeps: {
-    // Prebundle buffer so it’s available during Vite’s dep optimization
+    // Ensure buffer is pre-bundled during dev
     include: ['buffer'],
     esbuildOptions: {
       define: {
@@ -19,14 +26,4 @@ export default defineConfig({
       buffer: 'buffer',
     },
   },
-  build: {
-    rollupOptions: {
-      plugins: [
-        // Auto-inject global Buffer for any module referencing it
-        inject({
-          Buffer: ['buffer', 'Buffer'],
-        }),
-      ],
-    },
-  },
-})
+});
