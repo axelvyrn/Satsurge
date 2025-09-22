@@ -1,22 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import rollupNodePolyFill from 'rollup-plugin-node-polyfills'
-import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
-import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill'
+import inject from '@rollup/plugin-inject'
 
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
+    // Prebundle buffer so it’s available during Vite’s dep optimization
+    include: ['buffer'],
     esbuildOptions: {
       define: {
         global: 'globalThis',
       },
-      plugins: [
-        NodeGlobalsPolyfillPlugin({
-          buffer: true,
-        }),
-        NodeModulesPolyfillPlugin(),
-      ],
     },
     exclude: ['lucide-react'],
   },
@@ -27,7 +21,12 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      plugins: [rollupNodePolyFill()],
+      plugins: [
+        // Auto-inject global Buffer for any module referencing it
+        inject({
+          Buffer: ['buffer', 'Buffer'],
+        }),
+      ],
     },
   },
 })
