@@ -1,3 +1,4 @@
+// main.tsx — these must be the first lines
 import { Buffer } from 'buffer';
 
 declare global {
@@ -6,7 +7,6 @@ declare global {
   }
 }
 
-// Make Buffer global
 if (!window.Buffer) {
   window.Buffer = Buffer;
 }
