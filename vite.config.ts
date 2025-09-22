@@ -1,33 +1,33 @@
 // vite.config.ts
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
 import inject from '@rollup/plugin-inject';
 
 export default defineConfig({
-  plugins: [
-    react(),
-  ],
+  plugins: [react()],
   resolve: {
     alias: {
       buffer: 'buffer',
     },
   },
   optimizeDeps: {
+    // Make sure buffer is pre-bundled so it’s available to deps
     include: ['buffer', 'bolt11', 'bitcoinjs-lib'],
     esbuildOptions: {
       define: {
         global: 'globalThis',
       },
-      // This is the key for dev pre-bundling
-      inject: [path.resolve(__dirname, 'src/shims-esbuild.js')],
+      // Prepend this to pre-bundled deps so Buffer exists during scan
+      banner: `
+        import { Buffer } from "buffer";
+        if (!globalThis.Buffer) globalThis.Buffer = Buffer;
+      `,
     },
-    exclude: ['lucide-react'],
   },
   build: {
     rollupOptions: {
-      // This helps in build output when Buffer is referenced
       plugins: [
+        // Ensure Buffer exists in the production bundle too
         inject({
           Buffer: ['buffer', 'Buffer'],
         }),
