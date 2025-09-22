@@ -92,10 +92,10 @@ export default function Documentation() {
             <div className="bg-blue-50 rounded-xl p-6">
               <h3 className="text-xl font-semibold text-blue-900 mb-3">Game Events</h3>
               <ul className="space-y-2 text-blue-800">
-                <li>• <code>on game start</code> - Runs when the game begins</li>
-                <li>• <code>on player input</code> - Handles clicks, taps, keys</li>
-                <li>• <code>on collision</code> - Detects object interactions</li>
-                <li>• <code>on timer end</code> - Triggers after countdown</li>
+                <li>• <code>when game starts</code> - Runs when the game begins</li>
+                <li>• <code>when clicked/key pressed/touch</code> - Handles player input</li>
+                <li>• <code>collision detection</code> - Detects object interactions</li>
+                <li>• <code>timer events</code> - Triggers after delays</li>
               </ul>
             </div>
 
@@ -103,7 +103,7 @@ export default function Documentation() {
               <h3 className="text-xl font-semibold text-green-900 mb-3">Game Objects</h3>
               <ul className="space-y-2 text-green-800">
                 <li>• <code>create sprite</code> - Add visual game objects</li>
-                <li>• <code>move object</code> - Animate sprite movement</li>
+                <li>• <code>move sprite</code> - Animate sprite movement</li>
                 <li>• <code>create text</code> - Display scores, timers</li>
                 <li>• <code>play sound</code> - Add audio feedback</li>
               </ul>
@@ -114,7 +114,7 @@ export default function Documentation() {
               <ul className="space-y-2 text-purple-800">
                 <li>• <code>if/then</code> - Conditional game flow</li>
                 <li>• <code>repeat</code> - Loop game actions</li>
-                <li>• <code>wait</code> - Add timing delays</li>
+                <li>• <code>wait seconds</code> - Add timing delays</li>
                 <li>• <code>random</code> - Generate unpredictability</li>
               </ul>
             </div>
@@ -126,6 +126,61 @@ export default function Documentation() {
                 <li>• <code>subtract points</code> - Penalty system</li>
                 <li>• <code>set score</code> - Direct score control</li>
                 <li>• <code>end game</code> - Finish and submit score</li>
+              </ul>
+            </div>
+          </div>
+          
+          {/* Code Examples */}
+          <div className="mt-8 bg-gray-50 rounded-xl p-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Example: Simple Clicking Game</h3>
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <pre className="text-sm text-gray-700 overflow-x-auto">
+{`1. Drag "when game starts" block
+2. Inside it, add "create sprite" named "target" at x:400, y:300
+3. Add "when clicked" block
+4. Inside it, add "add points" with value 10
+5. Add "wait seconds" with value 30
+6. Add "end game" block
+
+This creates a 30-second clicking game where players earn 10 points per click!`}
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        {/* Advanced Features */}
+        <div className="bg-white rounded-2xl p-8 mb-12 shadow-lg">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">Advanced Features</h2>
+          
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Variables & Math</h3>
+              <p className="text-gray-700 mb-3">Use variables to store game state and math blocks for calculations:</p>
+              <ul className="list-disc list-inside text-gray-700 space-y-1 ml-4">
+                <li>Create variables for health, lives, or power-ups</li>
+                <li>Use math operations for scoring multipliers</li>
+                <li>Compare values for win/lose conditions</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Loops & Conditions</h3>
+              <p className="text-gray-700 mb-3">Control game flow with logic blocks:</p>
+              <ul className="list-disc list-inside text-gray-700 space-y-1 ml-4">
+                <li><code>if/then</code> blocks for conditional actions</li>
+                <li><code>repeat</code> blocks for animations or spawning</li>
+                <li>Combine conditions with <code>and/or</code> logic</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Sprite Management</h3>
+              <p className="text-gray-700 mb-3">Create dynamic, interactive game objects:</p>
+              <ul className="list-disc list-inside text-gray-700 space-y-1 ml-4">
+                <li>Position sprites with x/y coordinates</li>
+                <li>Move sprites smoothly with velocity</li>
+                <li>Detect when sprites overlap or collide</li>
+                <li>Change sprite appearance based on game state</li>
               </ul>
             </div>
           </div>
