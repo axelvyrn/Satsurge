@@ -17,10 +17,12 @@ export default defineConfig({
         global: 'globalThis',
       },
       // Prepend this to pre-bundled deps so Buffer exists during scan
-      banner: `
+      banner: {
+        js: `
         import { Buffer } from "buffer";
         if (!globalThis.Buffer) globalThis.Buffer = Buffer;
-      `,
+        `,
+      },
     },
   },
   build: {
