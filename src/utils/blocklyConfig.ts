@@ -2,14 +2,6 @@ import * as Blockly from 'blockly';
 
 // Custom blocks for game development
 export const initializeCustomBlocks = () => {
-  // Ensure Blockly.Blocks and Blockly.JavaScript are initialized
-  if (!Blockly.Blocks) {
-    Blockly.Blocks = {};
-  }
-  if (!Blockly.JavaScript) {
-    Blockly.JavaScript = {};
-  }
-
   // Game Events Category
   Blockly.Blocks['game_start'] = {
     init: function() {
