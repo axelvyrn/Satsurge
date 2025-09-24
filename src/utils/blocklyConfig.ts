@@ -1,11 +1,11 @@
 import * as Blockly from 'blockly/core';
-import { Blocks } from 'blockly/blocks';
+import 'blockly/blocks';
 import { javascriptGenerator } from 'blockly/javascript';
 
 // Custom blocks for game development
 export const initializeCustomBlocks = () => {
   // Game Events Category
-  Blocks['game_start'] = {
+  Blockly.Blocks['game_start'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("when game starts");
@@ -22,7 +22,7 @@ export const initializeCustomBlocks = () => {
     return `this.create = function() {\n${statements_do}};\n`;
   };
 
-  Blocks['player_input'] = {
+  Blockly.Blocks['player_input'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("when")
@@ -45,7 +45,7 @@ export const initializeCustomBlocks = () => {
   };
 
   // Game Objects Category
-  Blocks['create_sprite'] = {
+  Blockly.Blocks['create_sprite'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("create sprite")
@@ -68,7 +68,7 @@ export const initializeCustomBlocks = () => {
     return `this.${text_name} = this.add.rectangle(${number_x}, ${number_y}, 50, 50, 0xff6600);\n`;
   };
 
-  Blocks['move_sprite'] = {
+  Blockly.Blocks['move_sprite'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("move")
@@ -92,7 +92,7 @@ export const initializeCustomBlocks = () => {
   };
 
   // Scoring Category
-  Blocks['add_points'] = {
+  Blockly.Blocks['add_points'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("add")
@@ -110,7 +110,7 @@ export const initializeCustomBlocks = () => {
     return `this.score += ${number_points}; this.scoreText.setText('Score: ' + this.score);\n`;
   };
 
-  Blocks['end_game'] = {
+  Blockly.Blocks['end_game'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("end game");
@@ -125,7 +125,7 @@ export const initializeCustomBlocks = () => {
   };
 
   // Logic Category
-  Blocks['wait_seconds'] = {
+  Blockly.Blocks['wait_seconds'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("wait")
