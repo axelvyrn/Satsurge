@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Play, Save, Settings, Eye, Zap } from 'lucide-react';
-import * as Blockly from 'blockly';
+import * as Blockly from 'blockly/core';
+import { javascriptGenerator } from 'blockly/javascript';
 import { initializeCustomBlocks, createToolbox } from '../utils/blocklyConfig';
 import { createPhaserGame } from '../utils/phaserEngine';
 
@@ -175,8 +176,8 @@ export default function GameEditor() {
       // Load template blocks if available
       if (gameData?.blocks) {
         try {
-          const xml = Blockly.Xml.textToDom(gameData.blocks);
-          Blockly.Xml.domToWorkspace(xml, newWorkspace);
+          const xml = Blockly.utils.xml.textToDom(gameData.blocks);
+          Blockly.utils.xml.domToWorkspace(xml, newWorkspace);
         } catch (error) {
           console.error('Error loading template blocks:', error);
         }
@@ -184,7 +185,7 @@ export default function GameEditor() {
 
       // Listen for changes
       newWorkspace.addChangeListener(() => {
-        const code = Blockly.JavaScript.workspaceToCode(newWorkspace);
+        const code = javascriptGenerator.workspaceToCode(newWorkspace);
         setGeneratedCode(code);
       });
     }
@@ -208,8 +209,8 @@ export default function GameEditor() {
 
   const handleSave = () => {
     if (workspace) {
-      const xml = Blockly.Xml.workspaceToDom(workspace);
-      const xmlText = Blockly.Xml.domToText(xml);
+      const xml = Blockly.utils.xml.workspaceToDom(workspace);
+      const xmlText = Blockly.utils.xml.domToText(xml);
       
       // Save to localStorage for now (replace with API call)
       const gameToSave = {

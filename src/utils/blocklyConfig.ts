@@ -1,9 +1,11 @@
-import * as Blockly from 'blockly';
+import * as Blockly from 'blockly/core';
+import { Blocks } from 'blockly/blocks';
+import { javascriptGenerator } from 'blockly/javascript';
 
 // Custom blocks for game development
 export const initializeCustomBlocks = () => {
   // Game Events Category
-  Blockly.Blocks['game_start'] = {
+  Blocks['game_start'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("when game starts");
@@ -15,12 +17,12 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  Blockly.JavaScript['game_start'] = function(block) {
-    const statements_do = Blockly.JavaScript.statementToCode(block, 'DO');
+  javascriptGenerator['game_start'] = function(block) {
+    const statements_do = javascriptGenerator.statementToCode(block, 'DO');
     return `this.create = function() {\n${statements_do}};\n`;
   };
 
-  Blockly.Blocks['player_input'] = {
+  Blocks['player_input'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("when")
@@ -36,14 +38,14 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  Blockly.JavaScript['player_input'] = function(block) {
+  javascriptGenerator['player_input'] = function(block) {
     const dropdown_input_type = block.getFieldValue('INPUT_TYPE');
-    const statements_do = Blockly.JavaScript.statementToCode(block, 'DO');
+    const statements_do = javascriptGenerator.statementToCode(block, 'DO');
     return `this.input.on('${dropdown_input_type}', function() {\n${statements_do}});\n`;
   };
 
   // Game Objects Category
-  Blockly.Blocks['create_sprite'] = {
+  Blocks['create_sprite'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("create sprite")
@@ -59,14 +61,14 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  Blockly.JavaScript['create_sprite'] = function(block) {
+  javascriptGenerator['create_sprite'] = function(block) {
     const text_name = block.getFieldValue('NAME');
     const number_x = block.getFieldValue('X');
     const number_y = block.getFieldValue('Y');
     return `this.${text_name} = this.add.rectangle(${number_x}, ${number_y}, 50, 50, 0xff6600);\n`;
   };
 
-  Blockly.Blocks['move_sprite'] = {
+  Blocks['move_sprite'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("move")
@@ -82,7 +84,7 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  Blockly.JavaScript['move_sprite'] = function(block) {
+  javascriptGenerator['move_sprite'] = function(block) {
     const text_sprite = block.getFieldValue('SPRITE');
     const number_x = block.getFieldValue('X');
     const number_y = block.getFieldValue('Y');
@@ -90,7 +92,7 @@ export const initializeCustomBlocks = () => {
   };
 
   // Scoring Category
-  Blockly.Blocks['add_points'] = {
+  Blocks['add_points'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("add")
@@ -103,12 +105,12 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  Blockly.JavaScript['add_points'] = function(block) {
+  javascriptGenerator['add_points'] = function(block) {
     const number_points = block.getFieldValue('POINTS');
     return `this.score += ${number_points}; this.scoreText.setText('Score: ' + this.score);\n`;
   };
 
-  Blockly.Blocks['end_game'] = {
+  Blocks['end_game'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("end game");
@@ -118,12 +120,12 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  Blockly.JavaScript['end_game'] = function(block) {
+  javascriptGenerator['end_game'] = function(block) {
     return `this.scene.pause(); this.submitScore(this.score);\n`;
   };
 
   // Logic Category
-  Blockly.Blocks['wait_seconds'] = {
+  Blocks['wait_seconds'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("wait")
@@ -136,7 +138,7 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  Blockly.JavaScript['wait_seconds'] = function(block) {
+  javascriptGenerator['wait_seconds'] = function(block) {
     const number_seconds = block.getFieldValue('SECONDS');
     return `this.time.delayedCall(${number_seconds * 1000}, function() {\n}, [], this);\n`;
   };

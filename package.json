@@ -21,7 +21,7 @@
     "@supabase/supabase-js": "^2.57.4",
     "@types/node": "^24.5.2",
     "@types/react-router-dom": "^5.3.3",
-    "blockly": "^12.3.0",
+    "blockly": "^12.3.1",
     "bolt11": "^1.4.1",
     "crypto-js": "^4.2.0",
     "framer-motion": "^12.23.16",
