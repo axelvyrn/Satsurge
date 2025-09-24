@@ -137,7 +137,7 @@ export default function GameEditor() {
   const initializeBlockly = () => {
     if (blocklyRef.current) {
       // Initialize custom blocks
-      initializeCustomBlocks();
+      initializeCustomBlocks(javascriptGenerator);
       
       // Create workspace
       const newWorkspace = Blockly.inject(blocklyRef.current, {

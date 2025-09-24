@@ -3,7 +3,7 @@ import 'blockly/blocks';
 import { javascriptGenerator } from 'blockly/javascript';
 
 // Custom blocks for game development
-export const initializeCustomBlocks = () => {
+export const initializeCustomBlocks = (generator: any) => {
   // Game Events Category
   Blockly.Blocks['game_start'] = {
     init: function() {
@@ -17,8 +17,8 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  javascriptGenerator['game_start'] = function(block) {
-    const statements_do = javascriptGenerator.statementToCode(block, 'DO');
+  generator['game_start'] = function(block: any) {
+    const statements_do = generator.statementToCode(block, 'DO');
     return `this.create = function() {\n${statements_do}};\n`;
   };
 
@@ -29,7 +29,9 @@ export const initializeCustomBlocks = () => {
           .appendField(new Blockly.FieldDropdown([
             ["clicked", "click"],
             ["key pressed", "keydown"],
-            ["touch", "touch"]
+            ["touch", "touch"],
+            ["space pressed", "space"],
+            ["arrow key pressed", "arrow"]
           ]), "INPUT_TYPE");
       this.appendStatementInput("DO")
           .setCheck(null);
@@ -38,10 +40,26 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  javascriptGenerator['player_input'] = function(block) {
+  generator['player_input'] = function(block: any) {
     const dropdown_input_type = block.getFieldValue('INPUT_TYPE');
-    const statements_do = javascriptGenerator.statementToCode(block, 'DO');
+    const statements_do = generator.statementToCode(block, 'DO');
     return `this.input.on('${dropdown_input_type}', function() {\n${statements_do}});\n`;
+  };
+
+  Blockly.Blocks['game_update'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("every frame");
+      this.appendStatementInput("DO")
+          .setCheck(null);
+      this.setColour(120);
+      this.setTooltip("Runs every frame");
+    }
+  };
+
+  generator['game_update'] = function(block: any) {
+    const statements_do = generator.statementToCode(block, 'DO');
+    return `this.update = function() {\n${statements_do}};\n`;
   };
 
   // Game Objects Category
@@ -54,6 +72,16 @@ export const initializeCustomBlocks = () => {
           .appendField(new Blockly.FieldNumber(100), "X")
           .appendField("y:")
           .appendField(new Blockly.FieldNumber(100), "Y");
+      this.appendDummyInput()
+          .appendField("color:")
+          .appendField(new Blockly.FieldDropdown([
+            ["orange", "0xff6600"],
+            ["red", "0xff0000"],
+            ["blue", "0x0066ff"],
+            ["green", "0x00ff00"],
+            ["yellow", "0xffff00"],
+            ["purple", "0x9900ff"]
+          ]), "COLOR");
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
       this.setColour(230);
@@ -61,11 +89,61 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  javascriptGenerator['create_sprite'] = function(block) {
+  generator['create_sprite'] = function(block: any) {
     const text_name = block.getFieldValue('NAME');
     const number_x = block.getFieldValue('X');
     const number_y = block.getFieldValue('Y');
-    return `this.${text_name} = this.add.rectangle(${number_x}, ${number_y}, 50, 50, 0xff6600);\n`;
+    const color = block.getFieldValue('COLOR');
+    return `this.${text_name} = this.add.rectangle(${number_x}, ${number_y}, 50, 50, ${color});\n`;
+  };
+
+  Blockly.Blocks['create_circle'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("create circle")
+          .appendField(new Blockly.FieldTextInput("ball"), "NAME")
+          .appendField("at x:")
+          .appendField(new Blockly.FieldNumber(100), "X")
+          .appendField("y:")
+          .appendField(new Blockly.FieldNumber(100), "Y")
+          .appendField("radius:")
+          .appendField(new Blockly.FieldNumber(25), "RADIUS");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(230);
+      this.setTooltip("Creates a circle sprite");
+    }
+  };
+
+  generator['create_circle'] = function(block: any) {
+    const text_name = block.getFieldValue('NAME');
+    const number_x = block.getFieldValue('X');
+    const number_y = block.getFieldValue('Y');
+    const radius = block.getFieldValue('RADIUS');
+    return `this.${text_name} = this.add.circle(${number_x}, ${number_y}, ${radius}, 0x00ff00);\n`;
+  };
+
+  Blockly.Blocks['create_text'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("create text")
+          .appendField(new Blockly.FieldTextInput("Hello"), "TEXT")
+          .appendField("at x:")
+          .appendField(new Blockly.FieldNumber(100), "X")
+          .appendField("y:")
+          .appendField(new Blockly.FieldNumber(100), "Y");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(230);
+      this.setTooltip("Creates text on screen");
+    }
+  };
+
+  generator['create_text'] = function(block: any) {
+    const text = block.getFieldValue('TEXT');
+    const number_x = block.getFieldValue('X');
+    const number_y = block.getFieldValue('Y');
+    return `this.add.text(${number_x}, ${number_y}, '${text}', { fontSize: '32px', fill: '#000' });\n`;
   };
 
   Blockly.Blocks['move_sprite'] = {
@@ -84,11 +162,93 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  javascriptGenerator['move_sprite'] = function(block) {
+  generator['move_sprite'] = function(block: any) {
     const text_sprite = block.getFieldValue('SPRITE');
     const number_x = block.getFieldValue('X');
     const number_y = block.getFieldValue('Y');
     return `if(this.${text_sprite}) { this.${text_sprite}.x += ${number_x}; this.${text_sprite}.y += ${number_y}; }\n`;
+  };
+
+  Blockly.Blocks['set_sprite_position'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("set")
+          .appendField(new Blockly.FieldTextInput("player"), "SPRITE")
+          .appendField("position to x:")
+          .appendField(new Blockly.FieldNumber(100), "X")
+          .appendField("y:")
+          .appendField(new Blockly.FieldNumber(100), "Y");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(230);
+      this.setTooltip("Sets sprite to exact position");
+    }
+  };
+
+  generator['set_sprite_position'] = function(block: any) {
+    const text_sprite = block.getFieldValue('SPRITE');
+    const number_x = block.getFieldValue('X');
+    const number_y = block.getFieldValue('Y');
+    return `if(this.${text_sprite}) { this.${text_sprite}.x = ${number_x}; this.${text_sprite}.y = ${number_y}; }\n`;
+  };
+
+  Blockly.Blocks['hide_sprite'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("hide")
+          .appendField(new Blockly.FieldTextInput("player"), "SPRITE");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(230);
+      this.setTooltip("Hides a sprite");
+    }
+  };
+
+  generator['hide_sprite'] = function(block: any) {
+    const text_sprite = block.getFieldValue('SPRITE');
+    return `if(this.${text_sprite}) { this.${text_sprite}.visible = false; }\n`;
+  };
+
+  Blockly.Blocks['show_sprite'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("show")
+          .appendField(new Blockly.FieldTextInput("player"), "SPRITE");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(230);
+      this.setTooltip("Shows a sprite");
+    }
+  };
+
+  generator['show_sprite'] = function(block: any) {
+    const text_sprite = block.getFieldValue('SPRITE');
+    return `if(this.${text_sprite}) { this.${text_sprite}.visible = true; }\n`;
+  };
+
+  // Background Category
+  Blockly.Blocks['set_background_color'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("set background color to")
+          .appendField(new Blockly.FieldDropdown([
+            ["black", "0x000000"],
+            ["white", "0xffffff"],
+            ["blue", "0x87ceeb"],
+            ["green", "0x90ee90"],
+            ["red", "0xffcccb"],
+            ["yellow", "0xffffe0"]
+          ]), "COLOR");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(290);
+      this.setTooltip("Sets the background color");
+    }
+  };
+
+  generator['set_background_color'] = function(block: any) {
+    const color = block.getFieldValue('COLOR');
+    return `this.cameras.main.setBackgroundColor(${color});\n`;
   };
 
   // Scoring Category
@@ -105,9 +265,64 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  javascriptGenerator['add_points'] = function(block) {
+  generator['add_points'] = function(block: any) {
     const number_points = block.getFieldValue('POINTS');
-    return `this.score += ${number_points}; this.scoreText.setText('Score: ' + this.score);\n`;
+    return `this.score += ${number_points}; if(this.scoreText) this.scoreText.setText('Score: ' + this.score);\n`;
+  };
+
+  Blockly.Blocks['subtract_points'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("subtract")
+          .appendField(new Blockly.FieldNumber(5), "POINTS")
+          .appendField("points");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(160);
+      this.setTooltip("Subtracts points from player score");
+    }
+  };
+
+  generator['subtract_points'] = function(block: any) {
+    const number_points = block.getFieldValue('POINTS');
+    return `this.score -= ${number_points}; if(this.scoreText) this.scoreText.setText('Score: ' + this.score);\n`;
+  };
+
+  Blockly.Blocks['set_score'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("set score to")
+          .appendField(new Blockly.FieldNumber(0), "SCORE");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(160);
+      this.setTooltip("Sets score to specific value");
+    }
+  };
+
+  generator['set_score'] = function(block: any) {
+    const number_score = block.getFieldValue('SCORE');
+    return `this.score = ${number_score}; if(this.scoreText) this.scoreText.setText('Score: ' + this.score);\n`;
+  };
+
+  Blockly.Blocks['show_score'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("show score at x:")
+          .appendField(new Blockly.FieldNumber(10), "X")
+          .appendField("y:")
+          .appendField(new Blockly.FieldNumber(10), "Y");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(160);
+      this.setTooltip("Displays the score on screen");
+    }
+  };
+
+  generator['show_score'] = function(block: any) {
+    const number_x = block.getFieldValue('X');
+    const number_y = block.getFieldValue('Y');
+    return `this.scoreText = this.add.text(${number_x}, ${number_y}, 'Score: 0', { fontSize: '24px', fill: '#000' });\n`;
   };
 
   Blockly.Blocks['end_game'] = {
@@ -120,8 +335,8 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  javascriptGenerator['end_game'] = function(block) {
-    return `this.scene.pause(); this.submitScore(this.score);\n`;
+  generator['end_game'] = function(block: any) {
+    return `this.scene.pause(); if(this.submitScore) this.submitScore(this.score);\n`;
   };
 
   // Logic Category
@@ -138,9 +353,109 @@ export const initializeCustomBlocks = () => {
     }
   };
 
-  javascriptGenerator['wait_seconds'] = function(block) {
+  generator['wait_seconds'] = function(block: any) {
     const number_seconds = block.getFieldValue('SECONDS');
     return `this.time.delayedCall(${number_seconds * 1000}, function() {\n}, [], this);\n`;
+  };
+
+  Blockly.Blocks['repeat_forever'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("repeat forever");
+      this.appendStatementInput("DO")
+          .setCheck(null);
+      this.setColour(290);
+      this.setTooltip("Repeats the enclosed blocks forever");
+    }
+  };
+
+  generator['repeat_forever'] = function(block: any) {
+    const statements_do = generator.statementToCode(block, 'DO');
+    return `this.time.addEvent({ delay: 100, callback: function() {\n${statements_do}}, loop: true });\n`;
+  };
+
+  // Collision Detection
+  Blockly.Blocks['touching_sprite'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("touching")
+          .appendField(new Blockly.FieldTextInput("player"), "SPRITE1")
+          .appendField("and")
+          .appendField(new Blockly.FieldTextInput("enemy"), "SPRITE2");
+      this.setOutput(true, "Boolean");
+      this.setColour(290);
+      this.setTooltip("Checks if two sprites are touching");
+    }
+  };
+
+  generator['touching_sprite'] = function(block: any) {
+    const sprite1 = block.getFieldValue('SPRITE1');
+    const sprite2 = block.getFieldValue('SPRITE2');
+    return [`(this.${sprite1} && this.${sprite2} && Phaser.Geom.Intersects.RectangleToRectangle(this.${sprite1}.getBounds(), this.${sprite2}.getBounds()))`, generator.ORDER_LOGICAL_AND];
+  };
+
+  // Variables
+  Blockly.Blocks['create_variable'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("set")
+          .appendField(new Blockly.FieldTextInput("myVariable"), "VAR")
+          .appendField("to")
+          .appendField(new Blockly.FieldNumber(0), "VALUE");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(330);
+      this.setTooltip("Creates or sets a variable");
+    }
+  };
+
+  generator['create_variable'] = function(block: any) {
+    const varName = block.getFieldValue('VAR');
+    const value = block.getFieldValue('VALUE');
+    return `this.${varName} = ${value};\n`;
+  };
+
+  Blockly.Blocks['change_variable'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("change")
+          .appendField(new Blockly.FieldTextInput("myVariable"), "VAR")
+          .appendField("by")
+          .appendField(new Blockly.FieldNumber(1), "VALUE");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(330);
+      this.setTooltip("Changes a variable by specified amount");
+    }
+  };
+
+  generator['change_variable'] = function(block: any) {
+    const varName = block.getFieldValue('VAR');
+    const value = block.getFieldValue('VALUE');
+    return `this.${varName} += ${value};\n`;
+  };
+
+  // Sound
+  Blockly.Blocks['play_sound'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("play sound")
+          .appendField(new Blockly.FieldDropdown([
+            ["beep", "beep"],
+            ["pop", "pop"],
+            ["coin", "coin"],
+            ["jump", "jump"]
+          ]), "SOUND");
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(200);
+      this.setTooltip("Plays a sound effect");
+    }
+  };
+
+  generator['play_sound'] = function(block: any) {
+    const sound = block.getFieldValue('SOUND');
+    return `console.log('Playing sound: ${sound}');\n`;
   };
 };
 
@@ -159,13 +474,17 @@ export const createToolbox = () => {
           },
           {
             "kind": "block",
+            "type": "game_update"
+          },
+          {
+            "kind": "block",
             "type": "player_input"
           }
         ]
       },
       {
         "kind": "category",
-        "name": "Game Objects",
+        "name": "Sprites",
         "colour": "230",
         "contents": [
           {
@@ -174,7 +493,38 @@ export const createToolbox = () => {
           },
           {
             "kind": "block",
+            "type": "create_circle"
+          },
+          {
+            "kind": "block",
+            "type": "create_text"
+          },
+          {
+            "kind": "block",
             "type": "move_sprite"
+          },
+          {
+            "kind": "block",
+            "type": "set_sprite_position"
+          },
+          {
+            "kind": "block",
+            "type": "hide_sprite"
+          },
+          {
+            "kind": "block",
+            "type": "show_sprite"
+          }
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "Background",
+        "colour": "290",
+        "contents": [
+          {
+            "kind": "block",
+            "type": "set_background_color"
           }
         ]
       },
@@ -185,7 +535,19 @@ export const createToolbox = () => {
         "contents": [
           {
             "kind": "block",
+            "type": "show_score"
+          },
+          {
+            "kind": "block",
             "type": "add_points"
+          },
+          {
+            "kind": "block",
+            "type": "subtract_points"
+          },
+          {
+            "kind": "block",
+            "type": "set_score"
           },
           {
             "kind": "block",
@@ -201,6 +563,10 @@ export const createToolbox = () => {
           {
             "kind": "block",
             "type": "wait_seconds"
+          },
+          {
+            "kind": "block",
+            "type": "repeat_forever"
           },
           {
             "kind": "sep"
@@ -219,6 +585,29 @@ export const createToolbox = () => {
           },
           {
             "kind": "block",
+            "type": "logic_operation"
+          },
+          {
+            "kind": "block",
+            "type": "logic_negate"
+          },
+          {
+            "kind": "block",
+            "type": "logic_boolean"
+          },
+          {
+            "kind": "block",
+            "type": "touching_sprite"
+          }
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "Math",
+        "colour": "230",
+        "contents": [
+          {
+            "kind": "block",
             "type": "math_number"
           },
           {
@@ -227,11 +616,48 @@ export const createToolbox = () => {
           },
           {
             "kind": "block",
+            "type": "math_random_int"
+          },
+          {
+            "kind": "block",
+            "type": "math_random_float"
+          }
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "Variables",
+        "colour": "330",
+        "contents": [
+          {
+            "kind": "block",
+            "type": "create_variable"
+          },
+          {
+            "kind": "block",
+            "type": "change_variable"
+          },
+          {
+            "kind": "sep"
+          },
+          {
+            "kind": "block",
             "type": "variables_get"
           },
           {
             "kind": "block",
             "type": "variables_set"
+          }
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "Sound",
+        "colour": "200",
+        "contents": [
+          {
+            "kind": "block",
+            "type": "play_sound"
           }
         ]
       }
