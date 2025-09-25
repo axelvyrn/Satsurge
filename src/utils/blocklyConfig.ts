@@ -1,10 +1,13 @@
 import * as Blockly from 'blockly/core';
 import 'blockly/blocks';
-import 'blockly/msg/en';
+import * as En from 'blockly/msg/en';
 import { javascriptGenerator } from 'blockly/javascript';
 
+// Set Blockly locale
+Blockly.setLocale(En);
+
 // Custom blocks for game development
-export const initializeCustomBlocks = (generator: any) => {
+const initializeCustomBlocks = (generator: any) => {
   // Game Events Category
   Blockly.Blocks['game_start'] = {
     init: function() {
@@ -459,6 +462,9 @@ export const initializeCustomBlocks = (generator: any) => {
     return `console.log('Playing sound: ${sound}');\n`;
   };
 };
+
+// Initialize custom blocks once when module loads
+initializeCustomBlocks(javascriptGenerator);
 
 export const createToolbox = () => {
   return {

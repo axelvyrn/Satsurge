@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Play, Save, Settings, Eye, Zap } from 'lucide-react';
 import * as Blockly from 'blockly/core';
 import { javascriptGenerator } from 'blockly/javascript';
-import { initializeCustomBlocks, createToolbox } from '../utils/blocklyConfig';
+import { createToolbox } from '../utils/blocklyConfig';
 import { createPhaserGame } from '../utils/phaserEngine';
 
 export default function GameEditor() {
@@ -19,24 +19,32 @@ export default function GameEditor() {
 
   useEffect(() => {
     // Load game data based on gameId
-    // This would typically fetch from an API
     setGameData({
       id: gameId,
       name: gameId === 'from-scratch' ? 'New Game' : getTemplateName(gameId),
       template: gameId,
       blocks: getTemplateBlocks(gameId)
     });
+  }, [gameId]);
 
-    initializeBlockly();
+  useEffect(() => {
+    if (gameData) {
+      initializeBlockly();
+    }
     return () => {
       if (workspace) {
         workspace.dispose();
       }
+    };
+  }, [gameData]);
+
+  useEffect(() => {
+    return () => {
       if (phaserGame) {
         phaserGame.destroy(true);
       }
     };
-  }, [gameId]);
+  }, [phaserGame]);
 
   const getTemplateName = (id: string) => {
     const templates: { [key: string]: string } = {
@@ -136,9 +144,6 @@ export default function GameEditor() {
   };
   const initializeBlockly = () => {
     if (blocklyRef.current) {
-      // Initialize custom blocks
-      initializeCustomBlocks(javascriptGenerator);
-      
       // Create workspace
       const newWorkspace = Blockly.inject(blocklyRef.current, {
         toolbox: createToolbox(),
