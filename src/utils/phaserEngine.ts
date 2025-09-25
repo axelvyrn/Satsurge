@@ -17,6 +17,10 @@ export class GameScene extends Phaser.Scene {
     };
   }
 
+  init(data: { gameCode: string }) {
+    this.gameCode = data.gameCode || '';
+  }
+
   preload() {
     // Load default assets
     this.load.image('background', 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjk3MzE2Ii8+PC9zdmc+');
@@ -85,12 +89,12 @@ export const createPhaserGame = (containerId: string, gameCode: string) => {
         debug: false
       }
     },
-    scene: GameScene
+    scene: []
   };
 
   const game = new Phaser.Game(config);
-  const scene = game.scene.getScene('GameScene') as GameScene;
-  scene.gameCode = gameCode;
+  game.scene.add('GameScene', GameScene);
+  game.scene.start('GameScene', { gameCode });
   
   return game;
 };
