@@ -5,6 +5,8 @@ export class GameScene extends Phaser.Scene {
   public scoreText: any;
   public gameCode: string = '';
   public submitScore: (score: number) => void;
+  public userCreate: ((scene: GameScene) => void) | null = null;
+  public userUpdate: ((scene: GameScene) => void) | null = null;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -37,6 +39,11 @@ export class GameScene extends Phaser.Scene {
     try {
       const gameFunction = new Function('scene', this.gameCode);
       gameFunction.call(this, this);
+      
+      // Execute user's create logic if defined
+      if (this.userCreate) {
+        this.userCreate(this);
+      }
     } catch (error) {
       console.error('Game code execution error:', error);
     }
@@ -44,6 +51,9 @@ export class GameScene extends Phaser.Scene {
 
   update() {
     // Game update loop
+    if (this.userUpdate) {
+      this.userUpdate(this);
+    }
   }
 
   private sendScoreToServer(score: number) {

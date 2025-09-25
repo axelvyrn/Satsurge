@@ -181,8 +181,8 @@ export default function GameEditor() {
       // Load template blocks if available
       if (gameData?.blocks) {
         try {
-          const xml = Blockly.utils.xml.textToDom(gameData.blocks);
-          Blockly.utils.xml.domToWorkspace(xml, newWorkspace);
+          const xml = Blockly.Xml.textToDom(gameData.blocks);
+          Blockly.Xml.domToWorkspace(xml, newWorkspace);
         } catch (error) {
           console.error('Error loading template blocks:', error);
         }
@@ -214,8 +214,8 @@ export default function GameEditor() {
 
   const handleSave = () => {
     if (workspace) {
-      const xml = Blockly.utils.xml.workspaceToDom(workspace);
-      const xmlText = Blockly.utils.xml.domToText(xml);
+      const xml = Blockly.Xml.workspaceToDom(workspace);
+      const xmlText = Blockly.Xml.domToText(xml);
       
       // Save to localStorage for now (replace with API call)
       const gameToSave = {
@@ -313,8 +313,10 @@ export default function GameEditor() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">Game Preview</h2>
-              <button className="flex items-center px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors">
+              <button
                 onClick={runGame}
+                className="flex items-center px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors"
+              >
                 <Play className="h-4 w-4 mr-1" />
                 Run
               </button>

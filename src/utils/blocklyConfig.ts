@@ -23,7 +23,7 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['game_start'] = function(block: any, generator: any) {
     const statements_do = generator.statementToCode(block, 'DO');
-    return `this.create = function() {\n${statements_do}};\n`;
+    return `scene.userCreate = function(scene) {\n${statements_do}};\n`;
   };
 
   Blockly.Blocks['player_input'] = {
@@ -63,7 +63,7 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['game_update'] = function(block: any, generator: any) {
     const statements_do = generator.statementToCode(block, 'DO');
-    return `this.update = function() {\n${statements_do}};\n`;
+    return `scene.userUpdate = function(scene) {\n${statements_do}};\n`;
   };
 
   // Game Objects Category
