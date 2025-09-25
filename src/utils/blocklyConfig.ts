@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core';
 import 'blockly/blocks';
+import 'blockly/msg/en';
 import { javascriptGenerator } from 'blockly/javascript';
 
 // Custom blocks for game development
@@ -17,7 +18,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['game_start'] = function(block: any) {
+  generator.forBlock['game_start'] = function(block: any, generator: any) {
     const statements_do = generator.statementToCode(block, 'DO');
     return `this.create = function() {\n${statements_do}};\n`;
   };
@@ -40,7 +41,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['player_input'] = function(block: any) {
+  generator.forBlock['player_input'] = function(block: any, generator: any) {
     const dropdown_input_type = block.getFieldValue('INPUT_TYPE');
     const statements_do = generator.statementToCode(block, 'DO');
     return `this.input.on('${dropdown_input_type}', function() {\n${statements_do}});\n`;
@@ -57,7 +58,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['game_update'] = function(block: any) {
+  generator.forBlock['game_update'] = function(block: any, generator: any) {
     const statements_do = generator.statementToCode(block, 'DO');
     return `this.update = function() {\n${statements_do}};\n`;
   };
@@ -89,7 +90,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['create_sprite'] = function(block: any) {
+  generator.forBlock['create_sprite'] = function(block: any, generator: any) {
     const text_name = block.getFieldValue('NAME');
     const number_x = block.getFieldValue('X');
     const number_y = block.getFieldValue('Y');
@@ -115,7 +116,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['create_circle'] = function(block: any) {
+  generator.forBlock['create_circle'] = function(block: any, generator: any) {
     const text_name = block.getFieldValue('NAME');
     const number_x = block.getFieldValue('X');
     const number_y = block.getFieldValue('Y');
@@ -139,7 +140,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['create_text'] = function(block: any) {
+  generator.forBlock['create_text'] = function(block: any, generator: any) {
     const text = block.getFieldValue('TEXT');
     const number_x = block.getFieldValue('X');
     const number_y = block.getFieldValue('Y');
@@ -162,7 +163,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['move_sprite'] = function(block: any) {
+  generator.forBlock['move_sprite'] = function(block: any, generator: any) {
     const text_sprite = block.getFieldValue('SPRITE');
     const number_x = block.getFieldValue('X');
     const number_y = block.getFieldValue('Y');
@@ -185,7 +186,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['set_sprite_position'] = function(block: any) {
+  generator.forBlock['set_sprite_position'] = function(block: any, generator: any) {
     const text_sprite = block.getFieldValue('SPRITE');
     const number_x = block.getFieldValue('X');
     const number_y = block.getFieldValue('Y');
@@ -204,7 +205,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['hide_sprite'] = function(block: any) {
+  generator.forBlock['hide_sprite'] = function(block: any, generator: any) {
     const text_sprite = block.getFieldValue('SPRITE');
     return `if(this.${text_sprite}) { this.${text_sprite}.visible = false; }\n`;
   };
@@ -221,7 +222,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['show_sprite'] = function(block: any) {
+  generator.forBlock['show_sprite'] = function(block: any, generator: any) {
     const text_sprite = block.getFieldValue('SPRITE');
     return `if(this.${text_sprite}) { this.${text_sprite}.visible = true; }\n`;
   };
@@ -246,7 +247,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['set_background_color'] = function(block: any) {
+  generator.forBlock['set_background_color'] = function(block: any, generator: any) {
     const color = block.getFieldValue('COLOR');
     return `this.cameras.main.setBackgroundColor(${color});\n`;
   };
@@ -265,7 +266,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['add_points'] = function(block: any) {
+  generator.forBlock['add_points'] = function(block: any, generator: any) {
     const number_points = block.getFieldValue('POINTS');
     return `this.score += ${number_points}; if(this.scoreText) this.scoreText.setText('Score: ' + this.score);\n`;
   };
@@ -283,7 +284,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['subtract_points'] = function(block: any) {
+  generator.forBlock['subtract_points'] = function(block: any, generator: any) {
     const number_points = block.getFieldValue('POINTS');
     return `this.score -= ${number_points}; if(this.scoreText) this.scoreText.setText('Score: ' + this.score);\n`;
   };
@@ -300,7 +301,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['set_score'] = function(block: any) {
+  generator.forBlock['set_score'] = function(block: any, generator: any) {
     const number_score = block.getFieldValue('SCORE');
     return `this.score = ${number_score}; if(this.scoreText) this.scoreText.setText('Score: ' + this.score);\n`;
   };
@@ -319,7 +320,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['show_score'] = function(block: any) {
+  generator.forBlock['show_score'] = function(block: any, generator: any) {
     const number_x = block.getFieldValue('X');
     const number_y = block.getFieldValue('Y');
     return `this.scoreText = this.add.text(${number_x}, ${number_y}, 'Score: 0', { fontSize: '24px', fill: '#000' });\n`;
@@ -335,7 +336,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['end_game'] = function(block: any) {
+  generator.forBlock['end_game'] = function(block: any, generator: any) {
     return `this.scene.pause(); if(this.submitScore) this.submitScore(this.score);\n`;
   };
 
@@ -353,7 +354,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['wait_seconds'] = function(block: any) {
+  generator.forBlock['wait_seconds'] = function(block: any, generator: any) {
     const number_seconds = block.getFieldValue('SECONDS');
     return `this.time.delayedCall(${number_seconds * 1000}, function() {\n}, [], this);\n`;
   };
@@ -369,7 +370,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['repeat_forever'] = function(block: any) {
+  generator.forBlock['repeat_forever'] = function(block: any, generator: any) {
     const statements_do = generator.statementToCode(block, 'DO');
     return `this.time.addEvent({ delay: 100, callback: function() {\n${statements_do}}, loop: true });\n`;
   };
@@ -388,7 +389,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['touching_sprite'] = function(block: any) {
+  generator.forBlock['touching_sprite'] = function(block: any, generator: any) {
     const sprite1 = block.getFieldValue('SPRITE1');
     const sprite2 = block.getFieldValue('SPRITE2');
     return [`(this.${sprite1} && this.${sprite2} && Phaser.Geom.Intersects.RectangleToRectangle(this.${sprite1}.getBounds(), this.${sprite2}.getBounds()))`, generator.ORDER_LOGICAL_AND];
@@ -409,7 +410,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['create_variable'] = function(block: any) {
+  generator.forBlock['create_variable'] = function(block: any, generator: any) {
     const varName = block.getFieldValue('VAR');
     const value = block.getFieldValue('VALUE');
     return `this.${varName} = ${value};\n`;
@@ -429,7 +430,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['change_variable'] = function(block: any) {
+  generator.forBlock['change_variable'] = function(block: any, generator: any) {
     const varName = block.getFieldValue('VAR');
     const value = block.getFieldValue('VALUE');
     return `this.${varName} += ${value};\n`;
@@ -453,7 +454,7 @@ export const initializeCustomBlocks = (generator: any) => {
     }
   };
 
-  generator['play_sound'] = function(block: any) {
+  generator.forBlock['play_sound'] = function(block: any, generator: any) {
     const sound = block.getFieldValue('SOUND');
     return `console.log('Playing sound: ${sound}');\n`;
   };
