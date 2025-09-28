@@ -39,6 +39,9 @@ export class GameScene extends Phaser.Scene {
     // Initialize score
     this.score = 0;
 
+    // Enable input
+    this.input.setDefaultCursor('pointer');
+
     // Execute user-generated code
     try {
       const gameFunction = new Function('scene', this.gameCode);
@@ -79,9 +82,15 @@ export class GameScene extends Phaser.Scene {
 export const createPhaserGame = (containerId: string, gameCode: string) => {
   const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
+    width: '100%',
+    height: '100%',
     parent: containerId,
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+      width: 800,
+      height: 600
+    },
     physics: {
       default: 'arcade',
       arcade: {

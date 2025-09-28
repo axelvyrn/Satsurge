@@ -47,7 +47,29 @@ const initializeCustomBlocks = (generator: any) => {
   generator.forBlock['player_input'] = function(block: any, generator: any) {
     const dropdown_input_type = block.getFieldValue('INPUT_TYPE');
     const statements_do = generator.statementToCode(block, 'DO');
-    return `this.input.on('${dropdown_input_type}', function() {\n${statements_do}});\n`;
+    
+    let eventCode = '';
+    switch(dropdown_input_type) {
+      case 'click':
+        eventCode = `this.input.on('pointerdown', function() {\n${statements_do}});`;
+        break;
+      case 'keydown':
+        eventCode = `this.input.keyboard.on('keydown', function() {\n${statements_do}});`;
+        break;
+      case 'space':
+        eventCode = `this.input.keyboard.on('keydown-SPACE', function() {\n${statements_do}});`;
+        break;
+      case 'arrow':
+        eventCode = `this.input.keyboard.on('keydown-UP', function() {\n${statements_do}});
+                     this.input.keyboard.on('keydown-DOWN', function() {\n${statements_do}});
+                     this.input.keyboard.on('keydown-LEFT', function() {\n${statements_do}});
+                     this.input.keyboard.on('keydown-RIGHT', function() {\n${statements_do}});`;
+        break;
+      default:
+        eventCode = `this.input.on('pointerdown', function() {\n${statements_do}});`;
+    }
+    
+    return eventCode + '\n';
   };
 
   Blockly.Blocks['game_update'] = {
@@ -395,7 +417,45 @@ const initializeCustomBlocks = (generator: any) => {
   generator.forBlock['touching_sprite'] = function(block: any, generator: any) {
     const sprite1 = block.getFieldValue('SPRITE1');
     const sprite2 = block.getFieldValue('SPRITE2');
-    return [`(this.${sprite1} && this.${sprite2} && Phaser.Geom.Intersects.RectangleToRectangle(this.${sprite1}.getBounds(), this.${sprite2}.getBounds()))`, generator.ORDER_LOGICAL_AND];
+    return [`(this.${sprite1} && this.${sprite2} && Phaser.Geom.Rectangle.Overlaps(this.${sprite1}.getBounds(), this.${sprite2}.getBounds()))`, generator.ORDER_LOGICAL_AND];
+  };
+
+  Blockly.Blocks['sprite_touching_edge'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("sprite")
+          .appendField(new Blockly.FieldTextInput("player"), "SPRITE")
+          .appendField("touching edge");
+      this.setOutput(true, "Boolean");
+      this.setColour(290);
+      this.setTooltip("Checks if sprite is touching screen edge");
+    }
+  };
+
+  generator.forBlock['sprite_touching_edge'] = function(block: any, generator: any) {
+    const sprite = block.getFieldValue('SPRITE');
+    return [`(this.${sprite} && (this.${sprite}.x <= 0 || this.${sprite}.x >= 800 || this.${sprite}.y <= 0 || this.${sprite}.y >= 600))`, generator.ORDER_LOGICAL_AND];
+  };
+
+  Blockly.Blocks['on_collision'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("when")
+          .appendField(new Blockly.FieldTextInput("player"), "SPRITE1")
+          .appendField("touches")
+          .appendField(new Blockly.FieldTextInput("enemy"), "SPRITE2");
+      this.appendStatementInput("DO")
+          .setCheck(null);
+      this.setColour(120);
+      this.setTooltip("Runs when two sprites collide");
+    }
+  };
+
+  generator.forBlock['on_collision'] = function(block: any, generator: any) {
+    const sprite1 = block.getFieldValue('SPRITE1');
+    const sprite2 = block.getFieldValue('SPRITE2');
+    const statements_do = generator.statementToCode(block, 'DO');
+    return `this.physics.add.overlap(this.${sprite1}, this.${sprite2}, function() {\n${statements_do}});\n`;
   };
 
   // Variables
@@ -664,6 +724,14 @@ export const createToolbox = () => {
         "contents": [
           {
             "kind": "block",
+            },
+            {
+              "kind": "block", 
+              "type": "sprite_touching_edge"
+            },
+            {
+              "kind": "block",
+              "type": "on_collision"
             "type": "play_sound"
           }
         ]

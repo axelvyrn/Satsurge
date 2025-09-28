@@ -216,12 +216,13 @@ export default function GameEditor() {
     if (workspace) {
       const xml = Blockly.Xml.workspaceToDom(workspace);
       const xmlText = Blockly.Xml.domToText(xml);
+      const code = javascriptGenerator.workspaceToCode(workspace);
       
       // Save to localStorage for now (replace with API call)
       const gameToSave = {
         ...gameData,
         blocks: xmlText,
-        code: generatedCode,
+        code: code,
         lastModified: new Date().toISOString()
       };
       
