@@ -724,14 +724,6 @@ export const createToolbox = () => {
         "contents": [
           {
             "kind": "block",
-            },
-            {
-              "kind": "block", 
-              "type": "sprite_touching_edge"
-            },
-            {
-              "kind": "block",
-              "type": "on_collision"
             "type": "play_sound"
           }
         ]
