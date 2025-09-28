@@ -665,6 +665,33 @@ export const createToolbox = () => {
           {
             "kind": "block",
             "type": "touching_sprite"
+          },
+          {
+            "kind": "block",
+            "type": "sprite_touching_edge"
+          },
+          {
+            "kind": "block",
+            "type": "on_collision"
+          }
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "Collision",
+        "colour": "290",
+        "contents": [
+          {
+            "kind": "block",
+            "type": "touching_sprite"
+          },
+          {
+            "kind": "block",
+            "type": "sprite_touching_edge"
+          },
+          {
+            "kind": "block",
+            "type": "on_collision"
           }
         ]
       },
