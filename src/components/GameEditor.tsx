@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Play, Save, Settings, Eye, Zap } from 'lucide-react';
 import * as Blockly from 'blockly/core';
+import { Xml } from 'blockly/core';
 import { javascriptGenerator } from 'blockly/javascript';
 import { createToolbox } from '../utils/blocklyConfig';
 import { createPhaserGame } from '../utils/phaserEngine';
@@ -181,10 +182,24 @@ export default function GameEditor() {
       // Load template blocks if available
       if (gameData?.blocks) {
         try {
-          const xml = Blockly.Xml.textToDom(gameData.blocks);
-          Blockly.Xml.domToWorkspace(xml, newWorkspace);
+          const xml = Xml.textToDom(gameData.blocks);
+          Xml.domToWorkspace(xml, newWorkspace);
         } catch (error) {
           console.error('Error loading template blocks:', error);
+        }
+      }
+
+      // Load saved blocks from localStorage
+      const savedGame = localStorage.getItem(`game_${gameId}`);
+      if (savedGame) {
+        try {
+          const parsedGame = JSON.parse(savedGame);
+          if (parsedGame.blocks) {
+            const xml = Xml.textToDom(parsedGame.blocks);
+            Xml.domToWorkspace(xml, newWorkspace);
+          }
+        } catch (error) {
+          console.error('Error loading saved blocks:', error);
         }
       }
 
@@ -214,8 +229,8 @@ export default function GameEditor() {
 
   const handleSave = () => {
     if (workspace) {
-      const xml = Blockly.Xml.workspaceToDom(workspace);
-      const xmlText = Blockly.Xml.domToText(xml);
+      const xml = Xml.workspaceToDom(workspace);
+      const xmlText = Xml.domToText(xml);
       const freshCode = javascriptGenerator.workspaceToCode(workspace);
       
       // Save to localStorage for now (replace with API call)
@@ -231,6 +246,9 @@ export default function GameEditor() {
       
       // Update the generated code state to reflect what was saved
       setGeneratedCode(freshCode);
+      
+      // Show success notification
+      alert('Game saved successfully!');
     }
   };
 
