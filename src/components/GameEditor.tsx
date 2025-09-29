@@ -216,18 +216,21 @@ export default function GameEditor() {
     if (workspace) {
       const xml = Blockly.Xml.workspaceToDom(workspace);
       const xmlText = Blockly.Xml.domToText(xml);
-      const code = javascriptGenerator.workspaceToCode(workspace);
+      const freshCode = javascriptGenerator.workspaceToCode(workspace);
       
       // Save to localStorage for now (replace with API call)
       const gameToSave = {
         ...gameData,
         blocks: xmlText,
-        code: code,
+        code: freshCode,
         lastModified: new Date().toISOString()
       };
       
       localStorage.setItem(`game_${gameId}`, JSON.stringify(gameToSave));
-      console.log('Game saved successfully');
+      console.log('Game saved successfully', { blocks: xmlText, code: freshCode });
+      
+      // Update the generated code state to reflect what was saved
+      setGeneratedCode(freshCode);
     }
   };
 
