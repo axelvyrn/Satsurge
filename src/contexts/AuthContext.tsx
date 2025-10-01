@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase, Profile } from '../utils/supabase';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 export interface User {
   id: string;
@@ -9,6 +11,7 @@ export interface User {
   avatar?: string;
   earnings?: number;
   gamesCreated?: number;
+  profile?: Profile;
 }
 
 interface AuthContextType {
@@ -23,81 +26,161 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored auth data
-    const storedUser = localStorage.getItem('satsurge_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        loadUserProfile(session.user);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        loadUserProfile(session.user);
+      } else {
+        setUser(null);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Mock authentication - replace with real auth
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Check if user exists in localStorage
-    const users = JSON.parse(localStorage.getItem('satsurge_users') || '[]');
-    const existingUser = users.find((u: User) => u.email === email);
-    
-    if (existingUser) {
-      setUser(existingUser);
-      localStorage.setItem('satsurge_user', JSON.stringify(existingUser));
-      return true;
+  const loadUserProfile = async (supabaseUser: SupabaseUser) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (profile) {
+        setUser({
+          id: profile.id,
+          email: supabaseUser.email || '',
+          username: profile.username,
+          type: profile.user_type,
+          walletAddress: profile.wallet_address,
+          avatar: profile.avatar_url,
+          earnings: profile.total_earnings,
+          gamesCreated: profile.games_created,
+          profile,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    } finally {
+      setLoading(false);
     }
-    
-    return false;
+  };
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        await loadUserProfile(data.user);
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
   };
 
   const register = async (
-    email: string, 
-    password: string, 
-    username: string, 
+    email: string,
+    password: string,
+    username: string,
     type: 'player' | 'creator'
   ): Promise<boolean> => {
-    // Mock registration - replace with real auth
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const newUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      username,
-      type,
-      earnings: 0,
-      gamesCreated: 0,
-    };
-    
-    // Store in localStorage (replace with real database)
-    const users = JSON.parse(localStorage.getItem('satsurge_users') || '[]');
-    users.push(newUser);
-    localStorage.setItem('satsurge_users', JSON.stringify(users));
-    
-    setUser(newUser);
-    localStorage.setItem('satsurge_user', JSON.stringify(newUser));
-    
-    return true;
-  };
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('satsurge_user');
-  };
+      if (signUpError) throw signUpError;
 
-  const updateProfile = (updates: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...updates };
-      setUser(updatedUser);
-      localStorage.setItem('satsurge_user', JSON.stringify(updatedUser));
-      
-      // Update in users array too
-      const users = JSON.parse(localStorage.getItem('satsurge_users') || '[]');
-      const userIndex = users.findIndex((u: User) => u.id === user.id);
-      if (userIndex !== -1) {
-        users[userIndex] = updatedUser;
-        localStorage.setItem('satsurge_users', JSON.stringify(users));
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            username,
+            user_type: type,
+            total_earnings: 0,
+            games_created: 0,
+            games_played: 0,
+          });
+
+        if (profileError) throw profileError;
+
+        await loadUserProfile(data.user);
+        return true;
       }
+
+      return false;
+    } catch (error) {
+      console.error('Registration error:', error);
+      return false;
     }
   };
+
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const updateProfile = async (updates: Partial<User>) => {
+    if (!user) return;
+
+    try {
+      const profileUpdates: any = {};
+      if (updates.username) profileUpdates.username = updates.username;
+      if (updates.walletAddress !== undefined) profileUpdates.wallet_address = updates.walletAddress;
+      if (updates.avatar !== undefined) profileUpdates.avatar_url = updates.avatar;
+
+      const { error } = await supabase
+        .from('profiles')
+        .update(profileUpdates)
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+    } catch (error) {
+      console.error('Update profile error:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider value={{ user, login, register, logout, updateProfile }}>

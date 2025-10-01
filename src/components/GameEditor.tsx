@@ -6,11 +6,18 @@ import { Xml } from 'blockly/core';
 import { javascriptGenerator } from 'blockly/javascript';
 import { createToolbox } from '../utils/blocklyConfig';
 import { createPhaserGame } from '../utils/phaserEngine';
+import { gameService } from '../utils/gameService';
+import { Game } from '../utils/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function GameEditor() {
   const { gameId } = useParams();
   const navigate = useNavigate();
-  const [gameData, setGameData] = useState<any>(null);
+  const { user } = useAuth();
+  const [gameData, setGameData] = useState<Game | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const blocklyRef = useRef<HTMLDivElement>(null);
   const phaserRef = useRef<HTMLDivElement>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -19,14 +26,61 @@ export default function GameEditor() {
   const [generatedCode, setGeneratedCode] = useState<string>('');
 
   useEffect(() => {
-    // Load game data based on gameId
-    setGameData({
-      id: gameId,
-      name: gameId === 'from-scratch' ? 'New Game' : getTemplateName(gameId),
-      template: gameId,
-      blocks: getTemplateBlocks(gameId)
-    });
-  }, [gameId]);
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    loadGame();
+  }, [gameId, user]);
+
+  const loadGame = async () => {
+    try {
+      setLoadError(null);
+
+      if (gameId === 'from-scratch') {
+        setGameData({
+          id: '',
+          creator_id: user!.id,
+          name: 'New Game',
+          template_type: 'from-scratch',
+          difficulty: 'medium',
+          suggested_entry_fee: 100,
+          is_published: false,
+          play_count: 0,
+          creator_earnings: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as Game);
+      } else if (gameId?.startsWith('new-')) {
+        const templateType = gameId.replace('new-', '');
+        setGameData({
+          id: '',
+          creator_id: user!.id,
+          name: getTemplateName(templateType),
+          template_type: templateType,
+          blockly_xml: getTemplateBlocks(templateType),
+          difficulty: 'medium',
+          suggested_entry_fee: 100,
+          is_published: false,
+          play_count: 0,
+          creator_earnings: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as Game);
+      } else if (gameId) {
+        const game = await gameService.getGame(gameId);
+        if (game) {
+          setGameData(game);
+        } else {
+          setLoadError('Game not found');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading game:', error);
+      setLoadError('Failed to load game');
+    }
+  };
 
   useEffect(() => {
     if (gameData) {
@@ -179,27 +233,12 @@ export default function GameEditor() {
 
       setWorkspace(newWorkspace);
 
-      // Load template blocks if available
-      if (gameData?.blocks) {
+      if (gameData?.blockly_xml) {
         try {
-          const xml = Xml.textToDom(gameData.blocks);
+          const xml = Xml.textToDom(gameData.blockly_xml);
           Xml.domToWorkspace(xml, newWorkspace);
         } catch (error) {
-          console.error('Error loading template blocks:', error);
-        }
-      }
-
-      // Load saved blocks from localStorage
-      const savedGame = localStorage.getItem(`game_${gameId}`);
-      if (savedGame) {
-        try {
-          const parsedGame = JSON.parse(savedGame);
-          if (parsedGame.blocks) {
-            const xml = Xml.textToDom(parsedGame.blocks);
-            Xml.domToWorkspace(xml, newWorkspace);
-          }
-        } catch (error) {
-          console.error('Error loading saved blocks:', error);
+          console.error('Error loading blocks:', error);
         }
       }
 
@@ -227,40 +266,72 @@ export default function GameEditor() {
     }
   };
 
-  const handleSave = () => {
-    if (workspace) {
+  const handleSave = async () => {
+    if (!workspace || !gameData) return;
+
+    try {
+      setIsSaving(true);
       const xml = Xml.workspaceToDom(workspace);
       const xmlText = Xml.domToText(xml);
       const freshCode = javascriptGenerator.workspaceToCode(workspace);
-      
-      // Save to localStorage for now (replace with API call)
-      const gameToSave = {
-        ...gameData,
-        blocks: xmlText,
-        code: freshCode,
-        lastModified: new Date().toISOString()
+
+      const gameUpdates = {
+        name: gameData.name,
+        description: gameData.description,
+        blockly_xml: xmlText,
+        generated_code: freshCode,
+        difficulty: gameData.difficulty,
+        suggested_entry_fee: gameData.suggested_entry_fee,
+        template_type: gameData.template_type,
       };
-      
-      localStorage.setItem(`game_${gameId}`, JSON.stringify(gameToSave));
-      console.log('Game saved successfully', { blocks: xmlText, code: freshCode });
-      
-      // Update the generated code state to reflect what was saved
-      setGeneratedCode(freshCode);
-      
-      // Show success notification
-      alert('Game saved successfully!');
+
+      if (gameData.id) {
+        const updated = await gameService.updateGame(gameData.id, gameUpdates);
+        if (updated) {
+          setGameData(updated);
+          setGeneratedCode(freshCode);
+          alert('Game saved successfully!');
+        }
+      } else {
+        const created = await gameService.createGame(gameUpdates);
+        if (created) {
+          setGameData(created);
+          setGeneratedCode(freshCode);
+          navigate(`/game-editor/${created.id}`, { replace: true });
+          alert('Game created successfully!');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving game:', error);
+      alert('Failed to save game. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
+    if (!gameData || !gameData.id) {
+      alert('Please save your game before publishing');
+      return;
+    }
+
     if (!generatedCode.trim()) {
       alert('Please create your game logic before publishing');
       return;
     }
-    
-    // TODO: Implement publishing with 100 sats fee
-    console.log('Publishing game with code:', generatedCode);
-    alert('Publishing feature coming soon! (100 sats fee will be required)');
+
+    try {
+      setIsPublishing(true);
+      await handleSave();
+      await gameService.publishGame(gameData.id, 100);
+      alert('Game published successfully! (100 sats will be charged via Lightning)');
+      await loadGame();
+    } catch (error) {
+      console.error('Error publishing game:', error);
+      alert('Failed to publish game. Please try again.');
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   return (
@@ -299,23 +370,34 @@ export default function GameEditor() {
               
               <button
                 onClick={handleSave}
-                className="flex items-center px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={isSaving}
+                className="flex items-center px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="h-4 w-4 mr-2" />
-                Save
+                {isSaving ? 'Saving...' : 'Save'}
               </button>
               
               <button
                 onClick={handlePublish}
-                className="flex items-center px-4 py-2 text-white bg-gradient-to-r from-orange-500 to-yellow-500 rounded-lg hover:shadow-lg transition-all"
+                disabled={isPublishing || !gameData?.id}
+                className="flex items-center px-4 py-2 text-white bg-gradient-to-r from-orange-500 to-yellow-500 rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Zap className="h-4 w-4 mr-2" />
-                Publish
+                {isPublishing ? 'Publishing...' : gameData?.is_published ? 'Published' : 'Publish'}
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Error Display */}
+      {loadError && (
+        <div className="max-w-7xl mx-auto px-6 pt-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-800">{loadError}</p>
+          </div>
+        </div>
+      )}
 
       {/* Editor Content */}
       <div className="max-w-7xl mx-auto p-6">
@@ -366,7 +448,7 @@ export default function GameEditor() {
               <input
                 type="text"
                 value={gameData?.name || ''}
-                onChange={(e) => setGameData({ ...gameData, name: e.target.value })}
+                onChange={(e) => setGameData(gameData ? { ...gameData, name: e.target.value } : null)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
             </div>
@@ -375,10 +457,14 @@ export default function GameEditor() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Difficulty
               </label>
-              <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                <option>Easy</option>
-                <option>Medium</option>
-                <option>Hard</option>
+              <select
+                value={gameData?.difficulty || 'medium'}
+                onChange={(e) => setGameData(gameData ? { ...gameData, difficulty: e.target.value as 'easy' | 'medium' | 'hard' } : null)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
               </select>
             </div>
 
@@ -388,7 +474,8 @@ export default function GameEditor() {
               </label>
               <input
                 type="number"
-                placeholder="100"
+                value={gameData?.suggested_entry_fee || 100}
+                onChange={(e) => setGameData(gameData ? { ...gameData, suggested_entry_fee: parseInt(e.target.value) || 100 } : null)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
             </div>
@@ -400,6 +487,8 @@ export default function GameEditor() {
             </label>
             <textarea
               rows={3}
+              value={gameData?.description || ''}
+              onChange={(e) => setGameData(gameData ? { ...gameData, description: e.target.value } : null)}
               placeholder="Describe your game for players..."
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
