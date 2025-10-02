@@ -1,17 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Plus, 
-  Gamepad2, 
-  BarChart3, 
-  Settings, 
-  Wallet,
-  Edit3,
-  Eye,
-  Trash2,
-  TrendingUp,
-  Users,
-  Zap
-} from 'lucide-react';
+import { Plus, Gamepad2, BarChart3, Settings, Wallet, CreditCard as Edit3, Eye, Trash2, TrendingUp, Users, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
