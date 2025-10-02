@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Zap, User, Gamepad2, ArrowLeft, Mail, Lock, UserPlus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,8 +14,14 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { login, register } = useAuth();
+  const { login, register, user: currentUser } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (currentUser) {
+      navigate(currentUser.type === 'creator' ? '/creator' : '/player');
+    }
+  }, [currentUser, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,11 +33,6 @@ export default function AuthPage() {
       
       if (isLogin) {
         success = await login(formData.email, formData.password);
-        if (success) {
-          // Redirect based on user type stored in context
-          const user = JSON.parse(localStorage.getItem('satsurge_user') || '{}');
-          navigate(user.type === 'creator' ? '/creator' : '/player');
-        }
       } else {
         if (!userType) {
           setError('Please select account type');
@@ -39,9 +40,6 @@ export default function AuthPage() {
           return;
         }
         success = await register(formData.email, formData.password, formData.username, userType);
-        if (success) {
-          navigate(userType === 'creator' ? '/creator' : '/player');
-        }
       }
 
       if (!success) {

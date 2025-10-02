@@ -14,7 +14,8 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import Sidebar from '../components/Sidebar';
 import TournamentModal from '../components/TournamentModal';
-import { tournamentService } from '../utils/tournamentService';
+import { dbTournamentService } from '../utils/dbTournamentService';
+import { Tournament as DbTournament } from '../utils/supabase';
 
 interface Tournament {
   id: string;
@@ -32,43 +33,54 @@ export default function PlayerDashboard() {
   const [activeTab, setActiveTab] = useState('tournaments');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [activeTournaments, setActiveTournaments] = useState<Tournament[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [playerStats, setPlayerStats] = useState<any[]>([]);
 
   useEffect(() => {
-    // Load active tournaments
-    const loadTournaments = () => {
-      const rooms = tournamentService.getActiveRooms();
-      const tournaments = rooms.map(room => ({
-        id: room.id,
-        game: room.gameName,
-        entryFee: room.entryFee,
-        pool: room.prizePool || (room.currentPlayers.length * room.entryFee),
-        players: room.currentPlayers.length,
-        maxPlayers: room.maxPlayers,
-        timeLeft: calculateTimeLeft(room.expiresAt),
-        difficulty: 'Medium' as const // TODO: Get from game data
-      }));
-      setActiveTournaments(tournaments);
-    };
-
-    loadTournaments();
-    const interval = setInterval(loadTournaments, 5000); // Update every 5 seconds
-
-    return () => clearInterval(interval);
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [tournaments, stats] = await Promise.all([
+        dbTournamentService.getActiveTournaments(),
+        dbTournamentService.getMyStats(),
+      ]);
+
+      const displayTournaments = tournaments.map((t: any) => ({
+        id: t.id,
+        game: t.games?.name || 'Unknown Game',
+        entryFee: t.entry_fee,
+        pool: t.prize_pool,
+        players: t.current_participants,
+        maxPlayers: t.max_participants,
+        timeLeft: t.end_time ? calculateTimeLeft(new Date(t.end_time)) : 'Open',
+        difficulty: 'Medium' as const,
+      }));
+
+      setActiveTournaments(displayTournaments);
+      setPlayerStats(stats || []);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const calculateTimeLeft = (expiresAt: Date): string => {
     const now = new Date();
     const diff = expiresAt.getTime() - now.getTime();
-    
-    if (diff <= 0) return '0s';
-    
-    const minutes = Math.floor(diff / 60000);
-    const seconds = Math.floor((diff % 60000) / 1000);
-    
-    if (minutes > 0) {
-      return `${minutes}m ${seconds}s`;
-    }
-    return `${seconds}s`;
+
+    if (diff <= 0) return 'Ended';
+
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+
+    if (days > 0) return `${days}d ${hours}h`;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
   };
 
   const sidebarItems = [
@@ -91,6 +103,12 @@ export default function PlayerDashboard() {
               </div>
             </div>
 
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading tournaments...</p>
+              </div>
+            ) : (
             <div className="grid gap-4">
               {activeTournaments.length === 0 ? (
                 <div className="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-100">
@@ -156,6 +174,7 @@ export default function PlayerDashboard() {
                 ))
               )}
             </div>
+            )}
           </div>
         );
 
@@ -163,11 +182,30 @@ export default function PlayerDashboard() {
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900">Game History</h2>
-            <div className="bg-white rounded-xl p-8 text-center">
-              <History className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No games played yet</h3>
-              <p className="text-gray-600">Start competing in tournaments to see your history here.</p>
-            </div>
+            {playerStats.length === 0 ? (
+              <div className="bg-white rounded-xl p-8 text-center">
+                <History className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No games played yet</h3>
+                <p className="text-gray-600">Start competing in tournaments to see your history here.</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div className="space-y-4">
+                  {playerStats.map((stat: any) => (
+                    <div key={stat.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <h4 className="font-semibold text-gray-900">{stat.games?.name || 'Unknown Game'}</h4>
+                        <p className="text-sm text-gray-600">{new Date(stat.created_at).toLocaleDateString()}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-orange-600">{stat.score}</div>
+                        <p className="text-sm text-gray-600">Score</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         );
 

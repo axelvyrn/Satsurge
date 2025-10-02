@@ -16,8 +16,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import GameTemplateModal from '../components/GameTemplateModal';
+import { gameService } from '../utils/gameService';
+import { Game as DbGame } from '../utils/supabase';
 
-interface Game {
+interface GameDisplay {
   id: string;
   name: string;
   description: string;
@@ -39,55 +41,54 @@ export default function CreatorDashboard() {
     gamesPublished: 0
   });
 
-  const [userGames, setUserGames] = useState<Game[]>([]);
+  const [userGames, setUserGames] = useState<GameDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load user's games from localStorage
-    const loadUserGames = () => {
-      const games: Game[] = [];
+    loadUserGames();
+  }, [user]);
+
+  const loadUserGames = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const games = await gameService.getMyGames();
+
       let totalRevenue = 0;
       let totalPlays = 0;
-      
-      // Scan localStorage for user's games
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key?.startsWith('game_') && key !== 'game_from-scratch') {
-          try {
-            const gameData = JSON.parse(localStorage.getItem(key) || '{}');
-            if (gameData.creatorId === user?.id || !gameData.creatorId) {
-              const plays = Math.floor(Math.random() * 1000) + 100; // Mock data
-              const revenue = Math.floor(plays * 0.1 * 100); // 10% of 100 sats per play
-              
-              games.push({
-                id: key.replace('game_', ''),
-                name: gameData.name || 'Untitled Game',
-                description: gameData.description || 'No description',
-                thumbnail: '/api/placeholder/300/200',
-                plays,
-                revenue,
-                rating: 4.5 + Math.random() * 0.5,
-                status: gameData.published ? 'published' : 'draft'
-              });
-              
-              totalRevenue += revenue;
-              totalPlays += plays;
-            }
-          } catch (error) {
-            console.error('Error loading game:', error);
-          }
-        }
-      }
-      
-      setUserGames(games);
+
+      const displayGames: GameDisplay[] = games.map((game: DbGame) => {
+        const revenue = game.creator_earnings;
+        const plays = game.play_count;
+
+        totalRevenue += revenue;
+        totalPlays += plays;
+
+        return {
+          id: game.id,
+          name: game.name,
+          description: game.description || 'No description',
+          thumbnail: '/api/placeholder/300/200',
+          plays,
+          revenue,
+          rating: 4.5,
+          status: game.is_published ? 'published' as const : 'draft' as const
+        };
+      });
+
+      setUserGames(displayGames);
       setCreatorStats({
         totalRevenue,
         totalPlays,
-        gamesPublished: games.filter(g => g.status === 'published').length
+        gamesPublished: displayGames.filter(g => g.status === 'published').length
       });
-    };
-
-    loadUserGames();
-  }, [user]);
+    } catch (error) {
+      console.error('Error loading games:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const sidebarItems = [
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
@@ -163,7 +164,7 @@ export default function CreatorDashboard() {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-900">My Games</h2>
-              <button 
+              <button
                 onClick={() => setShowTemplateModal(true)}
                 className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transition-all flex items-center"
               >
@@ -172,6 +173,12 @@ export default function CreatorDashboard() {
               </button>
             </div>
 
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading games...</p>
+              </div>
+            ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {userGames.map((game) => (
                 <div 
@@ -206,8 +213,8 @@ export default function CreatorDashboard() {
                     </div>
                     
                     <div className="flex space-x-2">
-                      <button 
-                        onClick={() => navigate(`/editor/${game.id}`)}
+                      <button
+                        onClick={() => navigate(`/game-editor/${game.id}`)}
                         className="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center"
                       >
                         <Edit3 className="h-4 w-4 mr-1" />
@@ -238,6 +245,7 @@ export default function CreatorDashboard() {
                 </div>
               </div>
             </div>
+            )}
           </div>
         );
 
@@ -370,7 +378,7 @@ export default function CreatorDashboard() {
           onClose={() => setShowTemplateModal(false)}
           onSelect={(template) => {
             setShowTemplateModal(false);
-            navigate(`/editor/${template.id}`);
+            navigate(`/game-editor/new-${template.id}`);
           }}
         />
       )}
