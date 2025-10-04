@@ -288,7 +288,7 @@ export default function HomePage() {
               <ul className="space-y-2 text-gray-400">
                 <li><a href="#" className="hover:text-orange-400">Help Center</a></li>
                 <li><a href="#" className="hover:text-orange-400">Contact</a></li>
-                <li><a href="#" className="hover:text-orange-400">Status</a></li>
+                <li><Link to="/status" className="hover:text-orange-400">Status</Link></li>
               </ul>
             </div>
           </div>

@@ -7,6 +7,7 @@ import PlayerDashboard from './pages/PlayerDashboard';
 import CreatorDashboard from './pages/CreatorDashboard';
 import GameEditor from './components/GameEditor';
 import Documentation from './pages/Documentation';
+import StatusPage from './pages/StatusPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './App.css';
 
@@ -21,6 +22,7 @@ function AppContent() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/docs" element={<Documentation />} />
+          <Route path="/status" element={<StatusPage />} />
           
           {/* Protected Routes */}
           <Route 
