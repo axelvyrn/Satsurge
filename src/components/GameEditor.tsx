@@ -297,7 +297,7 @@ export default function GameEditor() {
         if (created) {
           setGameData(created);
           setGeneratedCode(freshCode);
-          navigate(`/game-editor/${created.id}`, { replace: true });
+          navigate(`/editor/${created.id}`, { replace: true });
           alert('Game created successfully!');
         }
       }

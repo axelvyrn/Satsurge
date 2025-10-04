@@ -202,7 +202,7 @@ export default function CreatorDashboard() {
                     
                     <div className="flex space-x-2">
                       <button
-                        onClick={() => navigate(`/game-editor/${game.id}`)}
+                        onClick={() => navigate(`/editor/${game.id}`)}
                         className="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center"
                       >
                         <Edit3 className="h-4 w-4 mr-1" />
@@ -366,7 +366,7 @@ export default function CreatorDashboard() {
           onClose={() => setShowTemplateModal(false)}
           onSelect={(template) => {
             setShowTemplateModal(false);
-            navigate(`/game-editor/new-${template.id}`);
+            navigate(`/editor/new-${template.id}`);
           }}
         />
       )}
