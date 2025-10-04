@@ -279,7 +279,7 @@ export default function HomePage() {
               <ul className="space-y-2 text-gray-400">
                 <li><a href="#" className="hover:text-orange-400">Discord</a></li>
                 <li><a href="#" className="hover:text-orange-400">Twitter</a></li>
-                <li><a href="#" className="hover:text-orange-400">GitHub</a></li>
+                <li><a href="https://github.com/axelvyrn/Satsurge" className="hover:text-orange-400">GitHub</a></li>
               </ul>
             </div>
 
