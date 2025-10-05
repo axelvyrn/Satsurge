@@ -20,8 +20,8 @@ export default function GameEditor() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const blocklyRef = useRef<HTMLDivElement>(null);
   const phaserRef = useRef<HTMLDivElement>(null);
+  const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [workspace, setWorkspace] = useState<Blockly.WorkspaceSvg | null>(null);
   const [phaserGame, setPhaserGame] = useState<Phaser.Game | null>(null);
   const [generatedCode, setGeneratedCode] = useState<string>('');
 
@@ -83,16 +83,23 @@ export default function GameEditor() {
   };
 
   useEffect(() => {
-    if (gameData && !workspace) {
+    if (gameData && blocklyRef.current && !workspaceRef.current) {
       initializeBlockly();
     }
+  }, [gameData]);
+
+  useEffect(() => {
     return () => {
-      if (workspace) {
-        workspace.dispose();
-        setWorkspace(null);
+      if (workspaceRef.current) {
+        try {
+          workspaceRef.current.dispose();
+          workspaceRef.current = null;
+        } catch (e) {
+          console.error('Error disposing workspace:', e);
+        }
       }
     };
-  }, [gameData]);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -215,7 +222,7 @@ export default function GameEditor() {
     return templates[id] || '';
   };
   const initializeBlockly = () => {
-    if (blocklyRef.current && !blocklyRef.current.hasChildNodes()) {
+    if (blocklyRef.current && !blocklyRef.current.hasChildNodes() && !workspaceRef.current) {
       // Create workspace
       const newWorkspace = Blockly.inject(blocklyRef.current, {
         toolbox: createToolbox(),
@@ -248,7 +255,7 @@ export default function GameEditor() {
         }
       });
 
-      setWorkspace(newWorkspace);
+      workspaceRef.current = newWorkspace;
 
       if (gameData?.blockly_xml) {
         try {
@@ -284,13 +291,13 @@ export default function GameEditor() {
   };
 
   const handleSave = async () => {
-    if (!workspace || !gameData) return;
+    if (!workspaceRef.current || !gameData) return;
 
     try {
       setIsSaving(true);
-      const xml = Xml.workspaceToDom(workspace);
+      const xml = Xml.workspaceToDom(workspaceRef.current);
       const xmlText = Xml.domToText(xml);
-      const freshCode = javascriptGenerator.workspaceToCode(workspace);
+      const freshCode = javascriptGenerator.workspaceToCode(workspaceRef.current);
 
       const gameUpdates = {
         name: gameData.name,
