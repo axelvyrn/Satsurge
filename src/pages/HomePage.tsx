@@ -7,7 +7,8 @@ import {
   ArrowRight, 
   Shield,
   Clock,
-  Bitcoin
+  Bitcoin,
+  Drill
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import logo from '../assets/satsurge.png';
@@ -68,6 +69,16 @@ export default function HomePage() {
                 Skill Gaming
               </span>
             </motion.h1>
+
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="inline-flex items-center justify-center px-4 py-2 mb-8 mx-auto 
+             bg-blue-100 rounded-lg text-xl font-semibold text-blue-800"
+            >
+              Under Development <Drill className="h-8 w-8 mb-1 ml-2" />
+            </motion.h2>
             
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
@@ -129,6 +140,46 @@ export default function HomePage() {
                 <div className="text-sm text-gray-600">Players</div>
               </div>
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative py-20">
+        {/* Background video */}
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          src="/src/assets/background.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
+
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/40" />
+
+        {/* Content */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 text-white bg-black/40 rounded-2xl p-8">
+            <h2 className="text-4xl font-bold mb-4">We are still in development!</h2>
+            <p className="text-xl max-w-2xl mx-auto">
+              Please be patient as we work to bring you the best experience possible!
+            </p>
+            <br />
+            <p className="text-xl max-w-2xl mx-auto">
+              We are working on a lot of features to make Satsurge as fun and engaging as possible.
+            </p>
+          </div>
+          <div className="flex justify-center mt-4">
+            <div className="bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full text-white px-8 py-4 font-semibold">
+              Till then, you can check out the site to see what we are working on!
+            </div>
+            <a
+              href="/docs"
+              className="ml-4 bg-white text-orange-500 px-8 py-4 rounded-full font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-orange-500"
+            >
+              Documentation
+            </a>
           </div>
         </div>
       </section>
