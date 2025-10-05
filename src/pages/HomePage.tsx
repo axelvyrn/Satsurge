@@ -21,7 +21,11 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <Zap className="h-8 w-8 text-orange-500 lightning-pulse" />
+              <img 
+              src="/satsurge.png" 
+              alt="Satsurge Logo" 
+              className="h-8 w-8 object-contain"
+              />
               <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">
                 Satsurge
               </span>
@@ -257,7 +261,11 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <Zap className="h-6 w-6 text-orange-500" />
+                <img 
+                src="/satsurge.png" 
+                alt="Satsurge Logo" 
+                className="h-6 w-6 object-contain"
+                />
                 <span className="text-xl font-bold">Satsurge</span>
               </div>
               <p className="text-gray-400">
