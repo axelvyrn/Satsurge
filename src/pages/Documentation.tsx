@@ -1,6 +1,6 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Zap, Code, Gamepad2, Book } from 'lucide-react';
+import logo from '../assets/satsurge.png';
 
 export default function Documentation() {
   return (
@@ -11,7 +11,11 @@ export default function Documentation() {
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="flex items-center space-x-2">
               <ArrowLeft className="h-5 w-5 text-orange-500" />
-              <Zap className="h-8 w-8 text-orange-500" />
+              <img 
+              src={logo} 
+              alt="Satsurge Logo" 
+              className="h-8 w-8 object-contain"
+              />
               <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">
                 Satsurge
               </span>

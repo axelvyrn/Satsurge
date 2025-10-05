@@ -1,5 +1,6 @@
 import React from 'react';
 import { Zap, LogOut, DivideIcon as LucideIcon } from 'lucide-react';
+import logo from '../assets/satsurge.png';
 
 interface SidebarItem {
   id: string;
@@ -21,7 +22,11 @@ export default function Sidebar({ items, activeTab, onTabChange, onLogout, userT
       {/* Logo */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center space-x-2">
-          <Zap className="h-8 w-8 text-orange-500" />
+        <img 
+              src={logo} 
+              alt="Satsurge Logo" 
+              className="h-8 w-8 object-contain"
+              />
           <span className="text-xl font-bold bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">
             Satsurge
           </span>

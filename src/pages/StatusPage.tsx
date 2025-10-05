@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../utils/supabase';
+import logo from '../assets/satsurge.png';
 
 interface SystemStatus {
   name: string;
@@ -170,7 +171,11 @@ export default function StatusPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="flex items-center space-x-2">
-              <Zap className="h-8 w-8 text-orange-500" />
+            <img 
+              src={logo} 
+              alt="Satsurge Logo" 
+              className="h-8 w-8 object-contain"
+            />
               <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">
                 Satsurge
               </span>

@@ -1,17 +1,16 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Zap, 
+import {
+  Zap,
   Trophy, 
   Users, 
   Gamepad2, 
   ArrowRight, 
-  Star,
   Shield,
   Clock,
   Bitcoin
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import logo from '../assets/satsurge.png';
 
 export default function HomePage() {
   return (
@@ -22,7 +21,7 @@ export default function HomePage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
               <img 
-              src="/satsurge.png" 
+              src={logo} 
               alt="Satsurge Logo" 
               className="h-8 w-8 object-contain"
               />
@@ -37,6 +36,9 @@ export default function HomePage() {
               </Link>
               <Link to="/docs" className="text-gray-700 hover:text-orange-500 transition-colors">
                 Documentation
+              </Link>
+              <Link to="/help" className="text-gray-700 hover:text-orange-500 transition-colors">
+                Help
               </Link>
             </div>
 
@@ -106,15 +108,24 @@ export default function HomePage() {
               className="grid grid-cols-3 gap-8 mt-16 max-w-md mx-auto"
             >
               <div className="text-center">
-                <div className="text-3xl font-bold text-orange-500">1M+</div>
+                <div className="flex flex-col items-center text-3xl font-bold text-orange-500">
+                  <Bitcoin className="h-8 w-8 mb-1" />
+                  1M+
+                </div>
                 <div className="text-sm text-gray-600">Sats Awarded</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-orange-500">500+</div>
+                <div className="flex flex-col items-center text-3xl font-bold text-orange-500">
+                  <Trophy className="h-8 w-8 mb-1" />
+                  500+
+                </div>
                 <div className="text-sm text-gray-600">Games Created</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-orange-500">10K+</div>
+                <div className="flex flex-col items-center text-3xl font-bold text-orange-500">
+                <Users className="h-8 w-8 mb-1" />
+                10K+
+              </div>
                 <div className="text-sm text-gray-600">Players</div>
               </div>
             </motion.div>
@@ -262,7 +273,7 @@ export default function HomePage() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <img 
-                src="/satsurge.png" 
+                src="/src/assets/satsurge.png" 
                 alt="Satsurge Logo" 
                 className="h-6 w-6 object-contain"
                 />
@@ -294,8 +305,8 @@ export default function HomePage() {
             <div>
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-orange-400">Help Center</a></li>
-                <li><a href="#" className="hover:text-orange-400">Contact</a></li>
+                <li><Link to="/help" className="hover:text-orange-400">Help Center</Link></li>
+                <li><a href="https://keybase.io/istealkids" className="hover:text-orange-400">Contact</a></li>
                 <li><Link to="/status" className="hover:text-orange-400">Status</Link></li>
               </ul>
             </div>

@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
@@ -8,7 +7,9 @@ import CreatorDashboard from './pages/CreatorDashboard';
 import GameEditor from './components/GameEditor';
 import Documentation from './pages/Documentation';
 import StatusPage from './pages/StatusPage';
+import HelpPage from './pages/HelpPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import ScrollToTop from './components/ScrollToTop';
 import './App.css';
 
 function AppContent() {
@@ -16,6 +17,7 @@ function AppContent() {
 
   return (
     <Router>
+      <ScrollToTop />
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -23,6 +25,7 @@ function AppContent() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/docs" element={<Documentation />} />
           <Route path="/status" element={<StatusPage />} />
+          <Route path="/help" element={<HelpPage />} />
           
           {/* Protected Routes */}
           <Route 
