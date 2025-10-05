@@ -83,12 +83,13 @@ export default function GameEditor() {
   };
 
   useEffect(() => {
-    if (gameData) {
+    if (gameData && !workspace) {
       initializeBlockly();
     }
     return () => {
       if (workspace) {
         workspace.dispose();
+        setWorkspace(null);
       }
     };
   }, [gameData]);
@@ -100,6 +101,22 @@ export default function GameEditor() {
       }
     };
   }, [phaserGame]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        console.log('Page hidden - preserving workspace state');
+      } else {
+        console.log('Page visible - workspace preserved');
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const getTemplateName = (id: string) => {
     const templates: { [key: string]: string } = {
@@ -198,7 +215,7 @@ export default function GameEditor() {
     return templates[id] || '';
   };
   const initializeBlockly = () => {
-    if (blocklyRef.current) {
+    if (blocklyRef.current && !blocklyRef.current.hasChildNodes()) {
       // Create workspace
       const newWorkspace = Blockly.inject(blocklyRef.current, {
         toolbox: createToolbox(),
