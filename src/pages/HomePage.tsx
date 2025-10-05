@@ -273,7 +273,7 @@ export default function HomePage() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <img 
-                src="/src/assets/satsurge.png" 
+                src={logo} 
                 alt="Satsurge Logo" 
                 className="h-6 w-6 object-contain"
                 />
