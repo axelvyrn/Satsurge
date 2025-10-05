@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import logo from '../assets/satsurge.png';
+import backgroundVideo from '../assets/background.mp4';
 
 export default function HomePage() {
   return (
@@ -148,7 +149,7 @@ export default function HomePage() {
         {/* Background video */}
         <video
           className="absolute inset-0 w-full h-full object-cover"
-          src="/src/assets/background.mp4"
+          src={backgroundVideo}
           autoPlay
           loop
           muted
