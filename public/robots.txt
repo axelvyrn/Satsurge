@@ -1,0 +1,3 @@
+User-agent: *
+Disallow:
+Sitemap: https://satsurge.pages.dev/sitemap.xml
