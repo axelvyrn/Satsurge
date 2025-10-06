@@ -274,6 +274,16 @@ export default function GameEditor() {
         const code = javascriptGenerator.workspaceToCode(newWorkspace);
         setGeneratedCode(code);
       });
+
+      // Load saved blocks if available
+      if (gameData?.blockly_xml) {
+        try {
+          const xmlDom = Xml.textToDom(gameData.blockly_xml);
+          Xml.domToWorkspace(xmlDom, newWorkspace);
+        } catch (error) {
+          console.error('Error loading blocks:', error);
+        }
+      }
     }
   };
 
