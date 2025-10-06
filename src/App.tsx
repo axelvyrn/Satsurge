@@ -8,6 +8,7 @@ import GameEditor from './components/GameEditor';
 import Documentation from './pages/Documentation';
 import StatusPage from './pages/StatusPage';
 import HelpPage from './pages/HelpPage';
+import NotFoundPage from './pages/NotFoundPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ScrollToTop from './components/ScrollToTop';
 import './App.css';
@@ -41,8 +42,8 @@ function AppContent() {
             element={user?.type === 'creator' ? <GameEditor /> : <Navigate to="/auth" />} 
           />
           
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" />} />
+          {/* 404 Page */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
     </Router>
