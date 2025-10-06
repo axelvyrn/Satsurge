@@ -334,21 +334,21 @@ export default function NotFoundPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 overflow-y-auto"
         >
-          <div className="relative bg-slate-900 rounded-lg p-6 max-w-4xl w-full">
+          <div className="relative bg-slate-900 rounded-lg p-4 sm:p-6 max-w-4xl w-full my-4 max-h-[95vh] overflow-y-auto">
             <button
               onClick={closeGame}
-              className="absolute top-4 right-4 text-white hover:text-red-500 transition-colors z-10"
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white hover:text-red-500 transition-colors z-10 bg-slate-800 rounded-full p-2"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
-            <div className="text-center mb-4">
-              <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 mb-2">
+            <div className="text-center mb-3 sm:mb-4">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 mb-2">
                 SPACE DEFENDER
               </h2>
-              <p className="text-cyan-300 text-sm font-mono mb-2">
+              <p className="text-cyan-300 text-xs sm:text-sm font-mono mb-2">
                 Arrow Keys / WASD to move • SPACE to shoot
               </p>
               {gameState === 'playing' && (
@@ -358,11 +358,11 @@ export default function NotFoundPage() {
               )}
             </div>
 
-            <div className="flex justify-center mb-4">
+            <div className="flex justify-center mb-3 sm:mb-4">
               <canvas
                 ref={canvasRef}
-                className="border-4 border-purple-500 rounded-lg shadow-lg shadow-purple-500/50"
-                style={{ maxWidth: '100%', height: 'auto' }}
+                className="border-2 sm:border-4 border-purple-500 rounded-lg shadow-lg shadow-purple-500/50 w-full"
+                style={{ maxWidth: '800px', maxHeight: '600px' }}
               />
             </div>
 
