@@ -294,28 +294,6 @@ export default function NotFoundPage() {
               Return to Home
             </Link>
 
-            <motion.button
-              onClick={startGame}
-              className="mt-8 relative px-8 py-4 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 text-white font-bold rounded-lg overflow-hidden"
-              whileHover={{ scale: 1.05 }}
-              animate={{
-                boxShadow: [
-                  '0 0 20px rgba(255, 0, 255, 0.5)',
-                  '0 0 40px rgba(0, 255, 255, 0.5)',
-                  '0 0 20px rgba(255, 0, 255, 0.5)',
-                ],
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <motion.span
-                animate={{
-                  opacity: [1, 0.5, 1],
-                }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                ??? GLITCH ???
-              </motion.span>
-            </motion.button>
           </motion.div>
         </motion.div>
 
@@ -329,6 +307,66 @@ export default function NotFoundPage() {
           </p>
         </motion.div>
       </div>
+
+      {/* Drifting Bitcoin Logo */}
+      <motion.div
+        className="fixed z-20 cursor-pointer"
+        onClick={startGame}
+        animate={{
+          x: [0, '20vw', '-10vw', '30vw', '-20vw', '40vw', '10vw', '50vw', '-30vw', '60vw', '0vw'],
+          y: [0, '-10vh', '20vh', '-5vh', '30vh', '-15vh', '40vh', '5vh', '-25vh', '50vh', '0vh'],
+          rotate: [0, 360, 720, 1080, 1440, 1800],
+        }}
+        transition={{
+          duration: 45,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+        whileHover={{ scale: 1.2 }}
+        style={{
+          left: '5%',
+          top: '10%',
+        }}
+      >
+        <motion.div
+          className="relative"
+          animate={{
+            opacity: [0.3, 0.8, 0.3],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          {/* Bitcoin Logo SVG */}
+          <img
+            src="/src/assets/bitcoin.svg"
+            alt="Bitcoin"
+            width="40"
+            height="40"
+            className="text-orange-500 drop-shadow-lg"
+          />
+          
+          {/* Subtle click prompt */}
+          <motion.div
+            className="absolute -top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap"
+            animate={{
+              opacity: [0, 1, 0],
+              y: [0, -5, 0],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: 1,
+            }}
+          >
+            <span className="text-xs text-orange-300 font-mono bg-black/50 px-2 py-1 rounded">
+              CLICK!?
+            </span>
+          </motion.div>
+        </motion.div>
+      </motion.div>
 
       {gameActive && (
         <motion.div
