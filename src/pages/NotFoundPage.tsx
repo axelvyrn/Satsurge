@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, X } from 'lucide-react';
+import bitcoin from '../assets/bitcoin.svg'
 
 export default function NotFoundPage() {
   const [gameActive, setGameActive] = useState(false);
@@ -341,7 +342,7 @@ export default function NotFoundPage() {
         >
           {/* Bitcoin Logo SVG */}
           <img
-            src="/src/assets/bitcoin.svg"
+            src={bitcoin}
             alt="Bitcoin"
             width="40"
             height="40"
