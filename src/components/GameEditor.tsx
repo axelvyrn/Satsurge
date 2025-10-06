@@ -89,6 +89,18 @@ export default function GameEditor() {
   }, [gameData]);
 
   useEffect(() => {
+    if (workspaceRef.current && gameData?.blockly_xml) {
+      try {
+        workspaceRef.current.clear();
+        const xml = Xml.textToDom(gameData.blockly_xml);
+        Xml.domToWorkspace(xml, workspaceRef.current);
+      } catch (error) {
+        console.error('Error restoring blocks:', error);
+      }
+    }
+  }, [gameData?.blockly_xml]);
+
+  useEffect(() => {
     return () => {
       if (workspaceRef.current) {
         try {
@@ -257,15 +269,6 @@ export default function GameEditor() {
 
       workspaceRef.current = newWorkspace;
 
-      if (gameData?.blockly_xml) {
-        try {
-          const xml = Xml.textToDom(gameData.blockly_xml);
-          Xml.domToWorkspace(xml, newWorkspace);
-        } catch (error) {
-          console.error('Error loading blocks:', error);
-        }
-      }
-
       // Listen for changes
       newWorkspace.addChangeListener(() => {
         const code = javascriptGenerator.workspaceToCode(newWorkspace);
@@ -313,14 +316,12 @@ export default function GameEditor() {
         const updated = await gameService.updateGame(gameData.id, gameUpdates);
         if (updated) {
           setGameData(updated);
-          setGeneratedCode(freshCode);
           alert('Game saved successfully!');
         }
       } else {
         const created = await gameService.createGame(gameUpdates);
         if (created) {
           setGameData(created);
-          setGeneratedCode(freshCode);
           navigate(`/editor/${created.id}`, { replace: true });
           alert('Game created successfully!');
         }
