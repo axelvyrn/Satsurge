@@ -333,14 +333,12 @@ export default function GameEditor() {
         const updated = await gameService.updateGame(gameData.id, gameUpdates);
         if (updated) {
           setGameData(updated);
-          setGeneratedCode(freshCode);
           alert('Game saved successfully!');
         }
       } else {
         const created = await gameService.createGame(gameUpdates);
         if (created) {
           setGameData(created);
-          setGeneratedCode(freshCode);
           navigate(`/editor/${created.id}`, { replace: true });
           alert('Game created successfully!');
         }
