@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Play, Save, Settings, Eye, Zap } from 'lucide-react';
 import * as Blockly from 'blockly/core';
-import { Xml } from 'blockly/core';
 import { javascriptGenerator } from 'blockly/javascript';
 import { createToolbox } from '../utils/blocklyConfig';
 import { createPhaserGame } from '../utils/phaserEngine';
@@ -87,6 +86,25 @@ export default function GameEditor() {
       initializeBlockly();
     }
   }, [gameData]);
+
+  useEffect(() => {
+    if (workspaceRef.current && gameData?.blockly_xml) {
+      try {
+        console.log('Restoring workspace with XML:', gameData.blockly_xml.substring(0, 100) + '...');
+        workspaceRef.current.clear();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(gameData.blockly_xml, 'text/xml');
+        Blockly.Xml.domToWorkspace(xml.documentElement, workspaceRef.current);
+        console.log('Workspace restored successfully');
+      } catch (error) {
+        console.error('Error restoring blocks:', error);
+        console.error('XML content:', gameData.blockly_xml);
+      }
+    } else if (workspaceRef.current && !gameData?.blockly_xml) {
+      console.log('No blockly_xml found in gameData, clearing workspace');
+      workspaceRef.current.clear();
+    }
+  }, [gameData?.blockly_xml]);
 
   useEffect(() => {
     return () => {
@@ -257,20 +275,22 @@ export default function GameEditor() {
 
       workspaceRef.current = newWorkspace;
 
-      if (gameData?.blockly_xml) {
-        try {
-          const xml = Xml.textToDom(gameData.blockly_xml);
-          Xml.domToWorkspace(xml, newWorkspace);
-        } catch (error) {
-          console.error('Error loading blocks:', error);
-        }
-      }
-
       // Listen for changes
       newWorkspace.addChangeListener(() => {
         const code = javascriptGenerator.workspaceToCode(newWorkspace);
         setGeneratedCode(code);
       });
+
+      // Load saved blocks if available
+      if (gameData?.blockly_xml) {
+        try {
+          const parser = new DOMParser();
+          const xmlDom = parser.parseFromString(gameData.blockly_xml, 'text/xml');
+          Blockly.Xml.domToWorkspace(xmlDom.documentElement, newWorkspace);
+        } catch (error) {
+          console.error('Error loading blocks:', error);
+        }
+      }
     }
   };
 
@@ -295,8 +315,8 @@ export default function GameEditor() {
 
     try {
       setIsSaving(true);
-      const xml = Xml.workspaceToDom(workspaceRef.current);
-      const xmlText = Xml.domToText(xml);
+      const xml = Blockly.Xml.workspaceToDom(workspaceRef.current);
+      const xmlText = Blockly.Xml.domToText(xml);
       const freshCode = javascriptGenerator.workspaceToCode(workspaceRef.current);
 
       const gameUpdates = {
