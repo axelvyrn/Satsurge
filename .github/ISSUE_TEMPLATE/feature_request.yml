@@ -1,7 +1,7 @@
 name: ✨ Feature request
 description: Request a feature you'd like to see in Satsurge!
 title: "feature request"
-labels: [feature]
+labels: [enhancement]
 body:
   - type: markdown
     attributes:
