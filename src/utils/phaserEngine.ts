@@ -7,6 +7,7 @@ export class GameScene extends Phaser.Scene {
   public submitScore: (score: number) => void;
   public userCreate: ((scene: GameScene) => void) | null = null;
   public userUpdate: ((scene: GameScene) => void) | null = null;
+  public isGameOver: boolean = false;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -38,6 +39,7 @@ export class GameScene extends Phaser.Scene {
 
     // Initialize score
     this.score = 0;
+    this.isGameOver = false;
 
     // Enable input
     this.input.setDefaultCursor('pointer');
@@ -58,9 +60,14 @@ export class GameScene extends Phaser.Scene {
 
   update() {
     // Game update loop
-    if (this.userUpdate) {
+    if (!this.isGameOver && this.userUpdate) {
       this.userUpdate(this);
     }
+  }
+
+  public endGame() {
+    this.physics.pause();
+    this.submitScore(this.score);
   }
 
   private sendScoreToServer(score: number) {
@@ -76,6 +83,37 @@ export class GameScene extends Phaser.Scene {
         timestamp: Date.now()
       })
     }).catch(console.error);
+  }
+
+  public endGame(): void {
+    if (this.isGameOver) return;
+    this.isGameOver = true;
+
+    try {
+      // Disable input
+      this.input.enabled = false;
+      this.input.keyboard?.removeAllListeners();
+      this.input.removeAllListeners();
+
+      // Stop timers and tweens
+      this.time.removeAllEvents();
+      this.tweens.killAll();
+
+      // Pause physics
+      if (this.physics && this.physics.world) {
+        this.physics.world.pause();
+      }
+
+      // Pause the scene (prevents further updates)
+      this.scene.pause();
+
+      // Submit score
+      if (this.submitScore) {
+        this.submitScore(this.score);
+      }
+    } catch (e) {
+      console.error('Error ending game:', e);
+    }
   }
 }
 
@@ -94,7 +132,7 @@ export const createPhaserGame = (containerId: string, gameCode: string) => {
     physics: {
       default: 'arcade',
       arcade: {
-        gravity: { y: 300 },
+        gravity: { x: 0, y: 0 },
         debug: false
       }
     },
