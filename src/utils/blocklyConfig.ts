@@ -1,9 +1,11 @@
 import * as Blockly from 'blockly/core';
 import 'blockly/blocks';
+// @ts-ignore - Blockly types for locales can be loose
 import * as En from 'blockly/msg/en';
 import { javascriptGenerator } from 'blockly/javascript';
 
-Blockly.setLocale(En);
+// Set Blockly locale
+(Blockly as any).setLocale(En as any);
 
 const initializeCustomBlocks = (generator: any) => {
   Blockly.Blocks['game_start'] = {
@@ -20,7 +22,7 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['game_start'] = function(block: any, generator: any) {
     const statements_do = generator.statementToCode(block, 'DO');
-    return `scene.userCreate = function(scene) {\n${statements_do}};\n`;
+    return `scene.userCreate = async function(scene) {\n${statements_do}};\n`;
   };
 
   Blockly.Blocks['player_input'] = {
@@ -51,25 +53,19 @@ const initializeCustomBlocks = (generator: any) => {
     let eventCode = '';
     switch(dropdown_input_type) {
       case 'click':
-      case 'touch':
-        eventCode = `scene.time.delayedCall(10, () => { if(scene.${sprite}) { scene.${sprite}.setInteractive(); scene.${sprite}.on('pointerdown', () => {\n${statements_do}}); } });`;
+        eventCode = `this.time.delayedCall(10, () => { if(this.${sprite}) { this.input.setTopOnly(true); this.${sprite}.setInteractive({ useHandCursor: true }); this.${sprite}.on('pointerdown', async () => { if(this.isGameOver) return;\n${statements_do}}); } }, [], this);`;
         break;
       case 'keydown':
-        eventCode = `scene.time.delayedCall(10, () => { scene.input.keyboard.on('keydown', () => {\n${statements_do}}); });`;
+        eventCode = `this.time.delayedCall(10, () => { if(!this._allKeysListener) { this._allKeysListener = true; this.input.keyboard.on('keydown', async (ev: KeyboardEvent) => { if(this.isGameOver) return; ${statements_do} }); } }, [], this);`;
         break;
       case 'space':
-        eventCode = `scene.time.delayedCall(10, () => { scene.input.keyboard.on('keydown-SPACE', () => {\n${statements_do}}); });`;
+        eventCode = `this.time.delayedCall(10, () => { if(!this._spaceListener) { this._spaceListener = true; this.input.keyboard.on('keydown-SPACE', async () => { if(this.isGameOver) return;\n${statements_do}}); } }, [], this);`;
         break;
       case 'arrow':
-        eventCode = `scene.time.delayedCall(10, () => {
-                       scene.input.keyboard.on('keydown-UP', () => {\n${statements_do}});
-                       scene.input.keyboard.on('keydown-DOWN', () => {\n${statements_do}});
-                       scene.input.keyboard.on('keydown-LEFT', () => {\n${statements_do}});
-                       scene.input.keyboard.on('keydown-RIGHT', () => {\n${statements_do}});
-                     });`;
+        eventCode = `this.time.delayedCall(10, () => { if(!this._arrowListeners) { this._arrowListeners = true; this.input.keyboard.on('keydown-UP', async () => { if(this.isGameOver) return;\n${statements_do}}); this.input.keyboard.on('keydown-DOWN', async () => { if(this.isGameOver) return;\n${statements_do}}); this.input.keyboard.on('keydown-LEFT', async () => { if(this.isGameOver) return;\n${statements_do}}); this.input.keyboard.on('keydown-RIGHT', async () => { if(this.isGameOver) return;\n${statements_do}}); } }, [], this);`;
         break;
       default:
-        eventCode = `scene.time.delayedCall(10, () => { scene.input.on('pointerdown', () => {\n${statements_do}}); });`;
+        eventCode = `this.time.delayedCall(10, () => { if(!this._pointerListener) { this._pointerListener = true; this.input.on('pointerdown', async () => { if(this.isGameOver) return;\n${statements_do}}); } }, [], this);`;
     }
 
     return eventCode + '\n';
@@ -88,7 +84,7 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['game_update'] = function(block: any, generator: any) {
     const statements_do = generator.statementToCode(block, 'DO');
-    return `scene.userUpdate = function(scene) {\n${statements_do}};\n`;
+    return `scene.userUpdate = async function(scene) {\n${statements_do}};\n`;
   };
 
   Blockly.Blocks['create_sprite'] = {
@@ -124,7 +120,7 @@ const initializeCustomBlocks = (generator: any) => {
     const value_x = generator.valueToCode(block, 'X', generator.ORDER_ATOMIC) || '100';
     const value_y = generator.valueToCode(block, 'Y', generator.ORDER_ATOMIC) || '100';
     const color = block.getFieldValue('COLOR');
-    return `scene.${text_name} = scene.add.rectangle(${value_x}, ${value_y}, 50, 50, ${color}); scene.physics.add.existing(scene.${text_name});\n`;
+    return `this.${text_name} = this.add.rectangle(${value_x}, ${value_y}, 50, 50, ${color}); this.${text_name}.setInteractive(); this.physics.add.existing(this.${text_name}); if(this.${text_name}.body) { this.${text_name}.body.setAllowGravity(false); this.${text_name}.body.setImmovable(true); }\n`;
   };
 
   Blockly.Blocks['create_circle'] = {
@@ -153,7 +149,7 @@ const initializeCustomBlocks = (generator: any) => {
     const value_x = generator.valueToCode(block, 'X', generator.ORDER_ATOMIC) || '100';
     const value_y = generator.valueToCode(block, 'Y', generator.ORDER_ATOMIC) || '100';
     const value_radius = generator.valueToCode(block, 'RADIUS', generator.ORDER_ATOMIC) || '25';
-    return `scene.${text_name} = scene.add.circle(${value_x}, ${value_y}, ${value_radius}, 0x00ff00); scene.physics.add.existing(scene.${text_name});\n`;
+    return `this.${text_name} = this.add.circle(${value_x}, ${value_y}, ${value_radius}, 0x00ff00); this.physics.add.existing(this.${text_name}); if(this.${text_name}.body) { this.${text_name}.body.setAllowGravity(false); this.${text_name}.body.setImmovable(true); }\n`;
   };
 
   Blockly.Blocks['create_text'] = {
@@ -203,7 +199,7 @@ const initializeCustomBlocks = (generator: any) => {
     const text_sprite = block.getFieldValue('SPRITE');
     const value_x = generator.valueToCode(block, 'X', generator.ORDER_ATOMIC) || '10';
     const value_y = generator.valueToCode(block, 'Y', generator.ORDER_ATOMIC) || '0';
-    return `if(scene.${text_sprite}) { scene.${text_sprite}.x += ${value_x}; scene.${text_sprite}.y += ${value_y}; }\n`;
+    return `if(this.${text_sprite}) { this.${text_sprite}.x += ${value_x}; this.${text_sprite}.y += ${value_y}; if(this.${text_sprite}.body) { this.${text_sprite}.body.updateFromGameObject(); } }\n`;
   };
 
   Blockly.Blocks['set_sprite_position'] = {
@@ -360,7 +356,42 @@ const initializeCustomBlocks = (generator: any) => {
   generator.forBlock['show_score'] = function(block: any, generator: any) {
     const value_x = generator.valueToCode(block, 'X', generator.ORDER_ATOMIC) || '10';
     const value_y = generator.valueToCode(block, 'Y', generator.ORDER_ATOMIC) || '10';
-    return `scene.scoreText = scene.add.text(${value_x}, ${value_y}, 'Score: 0', { fontSize: '24px', fill: '#000' });\n`;
+    return `this.scoreText = this.add.text(${value_x}, ${value_y}, 'Score: 0', { fontSize: '24px', fill: '#000' });\n`;
+  };
+
+  // Score compare (Boolean)
+  Blockly.Blocks['score_compare'] = {
+    init: function() {
+      this.appendDummyInput()
+          .appendField("score")
+          .appendField(new Blockly.FieldDropdown([
+            ["=", "EQ"],
+            ["≠", "NEQ"],
+            ["<", "LT"],
+            ["≤", "LTE"],
+            [">", "GT"],
+            ["≥", "GTE"]
+          ]), "OP")
+          .appendField(new Blockly.FieldNumber(0), "VALUE");
+      this.setOutput(true, "Boolean");
+      this.setColour(160);
+      this.setTooltip("Compares current score to a value");
+    }
+  };
+
+  generator.forBlock['score_compare'] = function(block: any, generator: any) {
+    const op = block.getFieldValue('OP');
+    const value = Number(block.getFieldValue('VALUE')) || 0;
+    let expr = 'false';
+    switch(op) {
+      case 'EQ': expr = `this.score === ${value}`; break;
+      case 'NEQ': expr = `this.score !== ${value}`; break;
+      case 'LT': expr = `this.score < ${value}`; break;
+      case 'LTE': expr = `this.score <= ${value}`; break;
+      case 'GT': expr = `this.score > ${value}`; break;
+      case 'GTE': expr = `this.score >= ${value}`; break;
+    }
+    return [ `(${expr})`, generator.ORDER_LOGICAL_AND ];
   };
 
   Blockly.Blocks['end_game'] = {
@@ -374,7 +405,7 @@ const initializeCustomBlocks = (generator: any) => {
   };
 
   generator.forBlock['end_game'] = function(block: any, generator: any) {
-    return `scene.endGame();\n`;
+    return `this.endGame();\n`;
   };
 
   Blockly.Blocks['wait_seconds'] = {
@@ -392,7 +423,7 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['wait_seconds'] = function(block: any, generator: any) {
     const number_seconds = block.getFieldValue('SECONDS');
-    return `scene.time.delayedCall(${number_seconds * 1000}, () => {\n});\n`;
+    return `await new Promise(resolve => this.time.delayedCall(${number_seconds * 1000}, resolve, [], this));\n`;
   };
 
   Blockly.Blocks['repeat_forever'] = {
@@ -408,7 +439,7 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['repeat_forever'] = function(block: any, generator: any) {
     const statements_do = generator.statementToCode(block, 'DO');
-    return `scene.time.addEvent({ delay: 100, callback: () => {\n${statements_do}}, loop: true });\n`;
+    return `this.time.addEvent({ delay: 100, callback: async () => { if(this.isGameOver) return;\n${statements_do}}, loop: true });\n`;
   };
 
   Blockly.Blocks['touching_sprite'] = {
@@ -445,27 +476,6 @@ const initializeCustomBlocks = (generator: any) => {
   generator.forBlock['sprite_touching_edge'] = function(block: any, generator: any) {
     const sprite = block.getFieldValue('SPRITE');
     return [`(scene.${sprite} && (scene.${sprite}.x <= 0 || scene.${sprite}.x >= 800 || scene.${sprite}.y <= 0 || scene.${sprite}.y >= 600))`, generator.ORDER_LOGICAL_AND];
-  };
-
-  Blockly.Blocks['on_collision'] = {
-    init: function() {
-      this.appendDummyInput()
-          .appendField("when")
-          .appendField(new Blockly.FieldTextInput("player"), "SPRITE1")
-          .appendField("touches")
-          .appendField(new Blockly.FieldTextInput("enemy"), "SPRITE2");
-      this.appendStatementInput("DO")
-          .setCheck(null);
-      this.setColour(120);
-      this.setTooltip("Runs when two sprites collide");
-    }
-  };
-
-  generator.forBlock['on_collision'] = function(block: any, generator: any) {
-    const sprite1 = block.getFieldValue('SPRITE1');
-    const sprite2 = block.getFieldValue('SPRITE2');
-    const statements_do = generator.statementToCode(block, 'DO');
-    return `scene.time.delayedCall(10, () => { if(scene.${sprite1} && scene.${sprite2}) { scene.physics.add.overlap(scene.${sprite1}, scene.${sprite2}, () => {\n${statements_do}}); } });\n`;
   };
 
   Blockly.Blocks['create_variable'] = {
@@ -613,6 +623,10 @@ export const createToolbox = () => {
           },
           {
             "kind": "block",
+            "type": "score_compare"
+          },
+          {
+            "kind": "block",
             "type": "add_points"
           },
           {
@@ -676,10 +690,6 @@ export const createToolbox = () => {
           {
             "kind": "block",
             "type": "sprite_touching_edge"
-          },
-          {
-            "kind": "block",
-            "type": "on_collision"
           }
         ]
       },
@@ -695,10 +705,6 @@ export const createToolbox = () => {
           {
             "kind": "block",
             "type": "sprite_touching_edge"
-          },
-          {
-            "kind": "block",
-            "type": "on_collision"
           }
         ]
       },
