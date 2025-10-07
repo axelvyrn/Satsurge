@@ -51,22 +51,25 @@ const initializeCustomBlocks = (generator: any) => {
     let eventCode = '';
     switch(dropdown_input_type) {
       case 'click':
-        eventCode = `if(scene.${sprite}) { scene.${sprite}.setInteractive(); scene.${sprite}.on('pointerdown', () => {\n${statements_do}}); }`;
+      case 'touch':
+        eventCode = `scene.time.delayedCall(10, () => { if(scene.${sprite}) { scene.${sprite}.setInteractive(); scene.${sprite}.on('pointerdown', () => {\n${statements_do}}); } });`;
         break;
       case 'keydown':
-        eventCode = `scene.input.keyboard.on('keydown', () => {\n${statements_do}});`;
+        eventCode = `scene.time.delayedCall(10, () => { scene.input.keyboard.on('keydown', () => {\n${statements_do}}); });`;
         break;
       case 'space':
-        eventCode = `scene.input.keyboard.on('keydown-SPACE', () => {\n${statements_do}});`;
+        eventCode = `scene.time.delayedCall(10, () => { scene.input.keyboard.on('keydown-SPACE', () => {\n${statements_do}}); });`;
         break;
       case 'arrow':
-        eventCode = `scene.input.keyboard.on('keydown-UP', () => {\n${statements_do}});
-                     scene.input.keyboard.on('keydown-DOWN', () => {\n${statements_do}});
-                     scene.input.keyboard.on('keydown-LEFT', () => {\n${statements_do}});
-                     scene.input.keyboard.on('keydown-RIGHT', () => {\n${statements_do}});`;
+        eventCode = `scene.time.delayedCall(10, () => {
+                       scene.input.keyboard.on('keydown-UP', () => {\n${statements_do}});
+                       scene.input.keyboard.on('keydown-DOWN', () => {\n${statements_do}});
+                       scene.input.keyboard.on('keydown-LEFT', () => {\n${statements_do}});
+                       scene.input.keyboard.on('keydown-RIGHT', () => {\n${statements_do}});
+                     });`;
         break;
       default:
-        eventCode = `scene.input.on('pointerdown', () => {\n${statements_do}});`;
+        eventCode = `scene.time.delayedCall(10, () => { scene.input.on('pointerdown', () => {\n${statements_do}}); });`;
     }
 
     return eventCode + '\n';
@@ -462,7 +465,7 @@ const initializeCustomBlocks = (generator: any) => {
     const sprite1 = block.getFieldValue('SPRITE1');
     const sprite2 = block.getFieldValue('SPRITE2');
     const statements_do = generator.statementToCode(block, 'DO');
-    return `scene.physics.add.overlap(scene.${sprite1}, scene.${sprite2}, () => {\n${statements_do}});\n`;
+    return `scene.time.delayedCall(10, () => { if(scene.${sprite1} && scene.${sprite2}) { scene.physics.add.overlap(scene.${sprite1}, scene.${sprite2}, () => {\n${statements_do}}); } });\n`;
   };
 
   Blockly.Blocks['create_variable'] = {
