@@ -1,12 +1,12 @@
 name: ✨ Feature request
-description: Request a feature you'd like to see in SN!
+description: Request a feature you'd like to see in Satsurge!
 title: "feature request"
 labels: [feature]
 body:
   - type: markdown
     attributes:
       value: |
-        We're always looking for suggestions on how we could improve SN!
+        We're always looking for suggestions on how we could improve Satsurge!
   - type: textarea
     attributes:
       label: Describe the problem you're trying to solve
