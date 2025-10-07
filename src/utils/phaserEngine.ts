@@ -63,6 +63,11 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  public endGame() {
+    this.physics.pause();
+    this.submitScore(this.score);
+  }
+
   private sendScoreToServer(score: number) {
     // TODO: Implement server-side score validation
     fetch('/api/submit-score', {

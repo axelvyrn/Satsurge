@@ -3,12 +3,9 @@ import 'blockly/blocks';
 import * as En from 'blockly/msg/en';
 import { javascriptGenerator } from 'blockly/javascript';
 
-// Set Blockly locale
 Blockly.setLocale(En);
 
-// Custom blocks for game development
 const initializeCustomBlocks = (generator: any) => {
-  // Game Events Category
   Blockly.Blocks['game_start'] = {
     init: function() {
       this.appendDummyInput()
@@ -54,22 +51,22 @@ const initializeCustomBlocks = (generator: any) => {
     let eventCode = '';
     switch(dropdown_input_type) {
       case 'click':
-        eventCode = `if(this.${sprite}) { this.${sprite}.setInteractive(); this.${sprite}.on('pointerdown', function() {\n${statements_do}}); }`;
+        eventCode = `if(scene.${sprite}) { scene.${sprite}.setInteractive(); scene.${sprite}.on('pointerdown', () => {\n${statements_do}}); }`;
         break;
       case 'keydown':
-        eventCode = `this.input.keyboard.on('keydown', function() {\n${statements_do}});`;
+        eventCode = `scene.input.keyboard.on('keydown', () => {\n${statements_do}});`;
         break;
       case 'space':
-        eventCode = `this.input.keyboard.on('keydown-SPACE', function() {\n${statements_do}});`;
+        eventCode = `scene.input.keyboard.on('keydown-SPACE', () => {\n${statements_do}});`;
         break;
       case 'arrow':
-        eventCode = `this.input.keyboard.on('keydown-UP', function() {\n${statements_do}});
-                     this.input.keyboard.on('keydown-DOWN', function() {\n${statements_do}});
-                     this.input.keyboard.on('keydown-LEFT', function() {\n${statements_do}});
-                     this.input.keyboard.on('keydown-RIGHT', function() {\n${statements_do}});`;
+        eventCode = `scene.input.keyboard.on('keydown-UP', () => {\n${statements_do}});
+                     scene.input.keyboard.on('keydown-DOWN', () => {\n${statements_do}});
+                     scene.input.keyboard.on('keydown-LEFT', () => {\n${statements_do}});
+                     scene.input.keyboard.on('keydown-RIGHT', () => {\n${statements_do}});`;
         break;
       default:
-        eventCode = `this.input.on('pointerdown', function() {\n${statements_do}});`;
+        eventCode = `scene.input.on('pointerdown', () => {\n${statements_do}});`;
     }
 
     return eventCode + '\n';
@@ -91,7 +88,6 @@ const initializeCustomBlocks = (generator: any) => {
     return `scene.userUpdate = function(scene) {\n${statements_do}};\n`;
   };
 
-  // Game Objects Category
   Blockly.Blocks['create_sprite'] = {
     init: function() {
       this.appendDummyInput()
@@ -125,7 +121,7 @@ const initializeCustomBlocks = (generator: any) => {
     const value_x = generator.valueToCode(block, 'X', generator.ORDER_ATOMIC) || '100';
     const value_y = generator.valueToCode(block, 'Y', generator.ORDER_ATOMIC) || '100';
     const color = block.getFieldValue('COLOR');
-    return `this.${text_name} = this.add.rectangle(${value_x}, ${value_y}, 50, 50, ${color});\n`;
+    return `scene.${text_name} = scene.add.rectangle(${value_x}, ${value_y}, 50, 50, ${color}); scene.physics.add.existing(scene.${text_name});\n`;
   };
 
   Blockly.Blocks['create_circle'] = {
@@ -154,7 +150,7 @@ const initializeCustomBlocks = (generator: any) => {
     const value_x = generator.valueToCode(block, 'X', generator.ORDER_ATOMIC) || '100';
     const value_y = generator.valueToCode(block, 'Y', generator.ORDER_ATOMIC) || '100';
     const value_radius = generator.valueToCode(block, 'RADIUS', generator.ORDER_ATOMIC) || '25';
-    return `this.${text_name} = this.add.circle(${value_x}, ${value_y}, ${value_radius}, 0x00ff00);\n`;
+    return `scene.${text_name} = scene.add.circle(${value_x}, ${value_y}, ${value_radius}, 0x00ff00); scene.physics.add.existing(scene.${text_name});\n`;
   };
 
   Blockly.Blocks['create_text'] = {
@@ -179,7 +175,7 @@ const initializeCustomBlocks = (generator: any) => {
     const text = block.getFieldValue('TEXT');
     const value_x = generator.valueToCode(block, 'X', generator.ORDER_ATOMIC) || '100';
     const value_y = generator.valueToCode(block, 'Y', generator.ORDER_ATOMIC) || '100';
-    return `this.add.text(${value_x}, ${value_y}, '${text}', { fontSize: '32px', fill: '#000' });\n`;
+    return `scene.add.text(${value_x}, ${value_y}, '${text}', { fontSize: '32px', fill: '#000' });\n`;
   };
 
   Blockly.Blocks['move_sprite'] = {
@@ -204,7 +200,7 @@ const initializeCustomBlocks = (generator: any) => {
     const text_sprite = block.getFieldValue('SPRITE');
     const value_x = generator.valueToCode(block, 'X', generator.ORDER_ATOMIC) || '10';
     const value_y = generator.valueToCode(block, 'Y', generator.ORDER_ATOMIC) || '0';
-    return `if(this.${text_sprite}) { this.${text_sprite}.x += ${value_x}; this.${text_sprite}.y += ${value_y}; }\n`;
+    return `if(scene.${text_sprite}) { scene.${text_sprite}.x += ${value_x}; scene.${text_sprite}.y += ${value_y}; }\n`;
   };
 
   Blockly.Blocks['set_sprite_position'] = {
@@ -229,7 +225,7 @@ const initializeCustomBlocks = (generator: any) => {
     const text_sprite = block.getFieldValue('SPRITE');
     const value_x = generator.valueToCode(block, 'X', generator.ORDER_ATOMIC) || '100';
     const value_y = generator.valueToCode(block, 'Y', generator.ORDER_ATOMIC) || '100';
-    return `if(this.${text_sprite}) { this.${text_sprite}.x = ${value_x}; this.${text_sprite}.y = ${value_y}; }\n`;
+    return `if(scene.${text_sprite}) { scene.${text_sprite}.x = ${value_x}; scene.${text_sprite}.y = ${value_y}; }\n`;
   };
 
   Blockly.Blocks['hide_sprite'] = {
@@ -246,7 +242,7 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['hide_sprite'] = function(block: any, generator: any) {
     const text_sprite = block.getFieldValue('SPRITE');
-    return `if(this.${text_sprite}) { this.${text_sprite}.visible = false; }\n`;
+    return `if(scene.${text_sprite}) { scene.${text_sprite}.visible = false; }\n`;
   };
 
   Blockly.Blocks['show_sprite'] = {
@@ -263,10 +259,9 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['show_sprite'] = function(block: any, generator: any) {
     const text_sprite = block.getFieldValue('SPRITE');
-    return `if(this.${text_sprite}) { this.${text_sprite}.visible = true; }\n`;
+    return `if(scene.${text_sprite}) { scene.${text_sprite}.visible = true; }\n`;
   };
 
-  // Background Category
   Blockly.Blocks['set_background_color'] = {
     init: function() {
       this.appendDummyInput()
@@ -288,10 +283,9 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['set_background_color'] = function(block: any, generator: any) {
     const color = block.getFieldValue('COLOR');
-    return `this.cameras.main.setBackgroundColor(${color});\n`;
+    return `scene.cameras.main.setBackgroundColor(${color});\n`;
   };
 
-  // Scoring Category
   Blockly.Blocks['add_points'] = {
     init: function() {
       this.appendDummyInput()
@@ -307,7 +301,7 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['add_points'] = function(block: any, generator: any) {
     const number_points = block.getFieldValue('POINTS');
-    return `this.score += ${number_points}; if(this.scoreText) this.scoreText.setText('Score: ' + this.score);\n`;
+    return `scene.score += ${number_points}; if(scene.scoreText) scene.scoreText.setText('Score: ' + scene.score);\n`;
   };
 
   Blockly.Blocks['subtract_points'] = {
@@ -325,7 +319,7 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['subtract_points'] = function(block: any, generator: any) {
     const number_points = block.getFieldValue('POINTS');
-    return `this.score -= ${number_points}; if(this.scoreText) this.scoreText.setText('Score: ' + this.score);\n`;
+    return `scene.score -= ${number_points}; if(scene.scoreText) scene.scoreText.setText('Score: ' + scene.score);\n`;
   };
 
   Blockly.Blocks['set_score'] = {
@@ -342,7 +336,7 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['set_score'] = function(block: any, generator: any) {
     const number_score = block.getFieldValue('SCORE');
-    return `this.score = ${number_score}; if(this.scoreText) this.scoreText.setText('Score: ' + this.score);\n`;
+    return `scene.score = ${number_score}; if(scene.scoreText) scene.scoreText.setText('Score: ' + scene.score);\n`;
   };
 
   Blockly.Blocks['show_score'] = {
@@ -363,7 +357,7 @@ const initializeCustomBlocks = (generator: any) => {
   generator.forBlock['show_score'] = function(block: any, generator: any) {
     const value_x = generator.valueToCode(block, 'X', generator.ORDER_ATOMIC) || '10';
     const value_y = generator.valueToCode(block, 'Y', generator.ORDER_ATOMIC) || '10';
-    return `this.scoreText = this.add.text(${value_x}, ${value_y}, 'Score: 0', { fontSize: '24px', fill: '#000' });\n`;
+    return `scene.scoreText = scene.add.text(${value_x}, ${value_y}, 'Score: 0', { fontSize: '24px', fill: '#000' });\n`;
   };
 
   Blockly.Blocks['end_game'] = {
@@ -377,10 +371,9 @@ const initializeCustomBlocks = (generator: any) => {
   };
 
   generator.forBlock['end_game'] = function(block: any, generator: any) {
-    return `this.scene.pause(); if(this.submitScore) this.submitScore(this.score);\n`;
+    return `scene.endGame();\n`;
   };
 
-  // Logic Category
   Blockly.Blocks['wait_seconds'] = {
     init: function() {
       this.appendDummyInput()
@@ -396,7 +389,7 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['wait_seconds'] = function(block: any, generator: any) {
     const number_seconds = block.getFieldValue('SECONDS');
-    return `this.time.delayedCall(${number_seconds * 1000}, function() {\n}, [], this);\n`;
+    return `scene.time.delayedCall(${number_seconds * 1000}, () => {\n});\n`;
   };
 
   Blockly.Blocks['repeat_forever'] = {
@@ -412,10 +405,9 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['repeat_forever'] = function(block: any, generator: any) {
     const statements_do = generator.statementToCode(block, 'DO');
-    return `this.time.addEvent({ delay: 100, callback: function() {\n${statements_do}}, loop: true });\n`;
+    return `scene.time.addEvent({ delay: 100, callback: () => {\n${statements_do}}, loop: true });\n`;
   };
 
-  // Collision Detection
   Blockly.Blocks['touching_sprite'] = {
     init: function() {
       this.appendDummyInput()
@@ -432,7 +424,7 @@ const initializeCustomBlocks = (generator: any) => {
   generator.forBlock['touching_sprite'] = function(block: any, generator: any) {
     const sprite1 = block.getFieldValue('SPRITE1');
     const sprite2 = block.getFieldValue('SPRITE2');
-    return [`(this.${sprite1} && this.${sprite2} && Phaser.Geom.Rectangle.Overlaps(this.${sprite1}.getBounds(), this.${sprite2}.getBounds()))`, generator.ORDER_LOGICAL_AND];
+    return [`(scene.${sprite1} && scene.${sprite2} && Phaser.Geom.Rectangle.Overlaps(scene.${sprite1}.getBounds(), scene.${sprite2}.getBounds()))`, generator.ORDER_LOGICAL_AND];
   };
 
   Blockly.Blocks['sprite_touching_edge'] = {
@@ -449,7 +441,7 @@ const initializeCustomBlocks = (generator: any) => {
 
   generator.forBlock['sprite_touching_edge'] = function(block: any, generator: any) {
     const sprite = block.getFieldValue('SPRITE');
-    return [`(this.${sprite} && (this.${sprite}.x <= 0 || this.${sprite}.x >= 800 || this.${sprite}.y <= 0 || this.${sprite}.y >= 600))`, generator.ORDER_LOGICAL_AND];
+    return [`(scene.${sprite} && (scene.${sprite}.x <= 0 || scene.${sprite}.x >= 800 || scene.${sprite}.y <= 0 || scene.${sprite}.y >= 600))`, generator.ORDER_LOGICAL_AND];
   };
 
   Blockly.Blocks['on_collision'] = {
@@ -470,10 +462,9 @@ const initializeCustomBlocks = (generator: any) => {
     const sprite1 = block.getFieldValue('SPRITE1');
     const sprite2 = block.getFieldValue('SPRITE2');
     const statements_do = generator.statementToCode(block, 'DO');
-    return `this.physics.add.overlap(this.${sprite1}, this.${sprite2}, function() {\n${statements_do}});\n`;
+    return `scene.physics.add.overlap(scene.${sprite1}, scene.${sprite2}, () => {\n${statements_do}});\n`;
   };
 
-  // Variables
   Blockly.Blocks['create_variable'] = {
     init: function() {
       this.appendDummyInput()
@@ -491,7 +482,7 @@ const initializeCustomBlocks = (generator: any) => {
   generator.forBlock['create_variable'] = function(block: any, generator: any) {
     const varName = block.getFieldValue('VAR');
     const value = block.getFieldValue('VALUE');
-    return `this.${varName} = ${value};\n`;
+    return `scene.${varName} = ${value};\n`;
   };
 
   Blockly.Blocks['change_variable'] = {
@@ -511,10 +502,9 @@ const initializeCustomBlocks = (generator: any) => {
   generator.forBlock['change_variable'] = function(block: any, generator: any) {
     const varName = block.getFieldValue('VAR');
     const value = block.getFieldValue('VALUE');
-    return `this.${varName} += ${value};\n`;
+    return `scene.${varName} += ${value};\n`;
   };
 
-  // Sound
   Blockly.Blocks['play_sound'] = {
     init: function() {
       this.appendDummyInput()
@@ -538,7 +528,6 @@ const initializeCustomBlocks = (generator: any) => {
   };
 };
 
-// Initialize custom blocks once when module loads
 initializeCustomBlocks(javascriptGenerator);
 
 export const createToolbox = () => {
