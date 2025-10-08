@@ -1,22 +1,134 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import {
   Zap,
-  Trophy, 
-  Users, 
-  Gamepad2, 
-  ArrowRight, 
+  Trophy,
+  Users,
+  Gamepad2,
+  ArrowRight,
   Shield,
   Clock,
   Bitcoin,
   Drill
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import logo from '../assets/satsurge.png';
 import backgroundVideo from '../assets/background.mp4';
 
+interface LightningBolt {
+  id: number;
+  x: number;
+  y: number;
+  segments: { x1: number; y1: number; x2: number; y2: number }[];
+}
+
 export default function HomePage() {
+  const [lightningBolts, setLightningBolts] = useState<LightningBolt[]>([]);
+
+  const generateLightningBolt = (startX: number, startY: number): { x1: number; y1: number; x2: number; y2: number }[] => {
+    const segments: { x1: number; y1: number; x2: number; y2: number }[] = [];
+    let currentX = startX;
+    let currentY = startY;
+    const targetY = window.innerHeight;
+    const segmentCount = Math.floor(Math.random() * 8) + 8;
+
+    for (let i = 0; i < segmentCount; i++) {
+      const nextX = currentX + (Math.random() - 0.5) * 100;
+      const nextY = currentY + (targetY - currentY) / (segmentCount - i) + Math.random() * 50;
+
+      segments.push({
+        x1: currentX,
+        y1: currentY,
+        x2: nextX,
+        y2: nextY
+      });
+
+      if (Math.random() > 0.7 && i < segmentCount - 2) {
+        const branchX = currentX + (Math.random() - 0.5) * 150;
+        const branchY = currentY + Math.random() * 100 + 50;
+        segments.push({
+          x1: currentX,
+          y1: currentY,
+          x2: branchX,
+          y2: branchY
+        });
+      }
+
+      currentX = nextX;
+      currentY = nextY;
+    }
+
+    return segments;
+  };
+
+  const triggerLightning = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top;
+
+    const bolt: LightningBolt = {
+      id: Date.now() + Math.random(),
+      x,
+      y,
+      segments: generateLightningBolt(x, y)
+    };
+
+    setLightningBolts(prev => [...prev, bolt]);
+
+    setTimeout(() => {
+      setLightningBolts(prev => prev.filter(b => b.id !== bolt.id));
+    }, 500);
+  };
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      <AnimatePresence>
+        {lightningBolts.map(bolt => (
+          <motion.svg
+            key={bolt.id}
+            className="fixed inset-0 pointer-events-none z-50"
+            style={{ width: '100%', height: '100%' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 1, 0] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, times: [0, 0.1, 0.4, 1] }}
+          >
+            <defs>
+              <filter id={`glow-${bolt.id}`}>
+                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            {bolt.segments.map((segment, idx) => (
+              <motion.line
+                key={idx}
+                x1={segment.x1}
+                y1={segment.y1}
+                x2={segment.x2}
+                y2={segment.y2}
+                stroke="#FFD700"
+                strokeWidth={Math.random() * 2 + 2}
+                strokeLinecap="round"
+                filter={`url(#glow-${bolt.id})`}
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{
+                  pathLength: 1,
+                  opacity: [0, 1, 0.8, 0],
+                  stroke: ['#FFD700', '#FFFF00', '#FFD700', '#FFA500']
+                }}
+                transition={{
+                  duration: 0.15,
+                  delay: idx * 0.02,
+                  times: [0, 0.3, 0.7, 1]
+                }}
+              />
+            ))}
+          </motion.svg>
+        ))}
+      </AnimatePresence>
       {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-orange-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,8 +156,9 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <Link 
-              to="/auth" 
+            <Link
+              to="/auth"
+              onMouseEnter={triggerLightning}
               className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-6 py-2 rounded-full font-medium hover:shadow-lg transition-all duration-300 transform hover:scale-105"
             >
               Sign In
@@ -97,15 +210,17 @@ export default function HomePage() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
-              <Link 
-                to="/auth" 
+              <Link
+                to="/auth"
+                onMouseEnter={triggerLightning}
                 className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-8 py-4 rounded-full font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center"
               >
                 Start Playing <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
-              
-              <Link 
-                to="/about" 
+
+              <Link
+                to="/about"
+                onMouseEnter={triggerLightning}
                 className="border-2 border-orange-300 text-orange-600 px-8 py-4 rounded-full font-semibold hover:bg-orange-50 transition-all duration-300"
               >
                 Learn More
@@ -308,8 +423,9 @@ export default function HomePage() {
             <p className="text-xl text-orange-100 mb-8">
               Join thousands of players earning sats through skill-based gaming
             </p>
-            <Link 
-              to="/auth" 
+            <Link
+              to="/auth"
+              onMouseEnter={triggerLightning}
               className="bg-white text-orange-500 px-8 py-4 rounded-full font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 inline-flex items-center"
             >
               Get Started Now <Zap className="ml-2 h-5 w-5" />
