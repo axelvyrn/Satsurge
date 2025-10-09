@@ -70,7 +70,7 @@ game "CatchTheSats" {
     endGame("Congrats! You earned sats!")
   }
 
-  requirePayment(100 sats) {
+  requirePayment(500 sats) {
     startGame()
   }
 }

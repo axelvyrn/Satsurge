@@ -62,9 +62,8 @@ export default function HomePage() {
   };
 
   const triggerLightning = (e: React.MouseEvent<HTMLElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top;
+    const x = Math.random() * window.innerWidth;
+    const y = 0;
 
     const bolt: LightningBolt = {
       id: Date.now() + Math.random(),
@@ -77,7 +76,7 @@ export default function HomePage() {
 
     setTimeout(() => {
       setLightningBolts(prev => prev.filter(b => b.id !== bolt.id));
-    }, 500);
+    }, 1500);
   };
 
   return (
@@ -91,7 +90,7 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 1, 1, 0] }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, times: [0, 0.1, 0.4, 1] }}
+            transition={{ duration: 1.5, times: [0, 0.1, 0.4, 1] }}
           >
             <defs>
               <filter id={`glow-${bolt.id}`}>
@@ -110,7 +109,7 @@ export default function HomePage() {
                 x2={segment.x2}
                 y2={segment.y2}
                 stroke="#FFD700"
-                strokeWidth={Math.random() * 2 + 2}
+                strokeWidth={Math.random() * 2 + 3}
                 strokeLinecap="round"
                 filter={`url(#glow-${bolt.id})`}
                 initial={{ pathLength: 0, opacity: 0 }}

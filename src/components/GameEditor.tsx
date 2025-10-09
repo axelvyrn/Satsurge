@@ -6,6 +6,7 @@ import { javascriptGenerator } from 'blockly/javascript';
 import { createToolbox } from '../utils/blocklyConfig';
 import { createPhaserGame } from '../utils/phaserEngine';
 import { gameService } from '../utils/gameService';
+import { dbTournamentService } from '../utils/dbTournamentService';
 import { Game } from '../utils/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -23,6 +24,7 @@ export default function GameEditor() {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [phaserGame, setPhaserGame] = useState<Phaser.Game | null>(null);
   const [generatedCode, setGeneratedCode] = useState<string>('');
+  const [showPublishModal, setShowPublishModal] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -351,7 +353,7 @@ export default function GameEditor() {
     }
   };
 
-  const handlePublish = async () => {
+  const confirmPublish = async () => {
     if (!gameData || !gameData.id) {
       alert('Please save your game before publishing');
       return;
@@ -365,14 +367,30 @@ export default function GameEditor() {
     try {
       setIsPublishing(true);
       await handleSave();
-      await gameService.publishGame(gameData.id, 100);
-      alert('Game published successfully! (100 sats will be charged via Lightning)');
+      await gameService.publishGame(gameData.id, 500);
+
+      // Create an open tournament so players can see and join it
+      try {
+        await dbTournamentService.createTournament(gameData.id, {
+          name: `${gameData.name} Open Tournament`,
+          entry_fee: gameData.suggested_entry_fee || 0,
+          prize_pool: 0,
+          max_participants: 16,
+          current_participants: 0,
+          status: 'open',
+        } as any);
+      } catch (e) {
+        console.error('Failed to create tournament after publish:', e);
+      }
+
+      alert('Game published successfully! (Dev: payment mocked)');
       await loadGame();
     } catch (error) {
       console.error('Error publishing game:', error);
       alert('Failed to publish game. Please try again.');
     } finally {
       setIsPublishing(false);
+      setShowPublishModal(false);
     }
   };
 
@@ -420,7 +438,7 @@ export default function GameEditor() {
               </button>
               
               <button
-                onClick={handlePublish}
+                onClick={() => setShowPublishModal(true)}
                 disabled={isPublishing || !gameData?.id}
                 className="flex items-center px-4 py-2 text-white bg-gradient-to-r from-orange-500 to-yellow-500 rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -544,12 +562,54 @@ export default function GameEditor() {
             <div>
               <h4 className="font-semibold text-orange-800 mb-1">Creator Fee</h4>
               <p className="text-sm text-orange-700">
-                Publishing this game will cost 100 sats. You'll earn 10% of all entry fees from players who compete in tournaments using your game.
+                Publishing this game will cost 500 sats. You'll earn 10% of all entry fees from players who compete in tournaments using your game.
               </p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Publish Payment Modal (Dev/Dummy) */}
+      {showPublishModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-md w-full">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900">Publish Game</h3>
+              <p className="text-sm text-gray-600 mt-1">A 500 sats publish fee is required.</p>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <p className="text-orange-800 text-sm">
+                  Dev mode: Payment is mocked. Click Confirm to proceed.
+                </p>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-600">Game</div>
+                <div className="font-medium text-gray-900">{gameData?.name}</div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-600">Fee</div>
+                <div className="font-semibold text-gray-900">500 sats</div>
+              </div>
+              <div className="flex space-x-2 pt-2">
+                <button
+                  onClick={() => setShowPublishModal(false)}
+                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmPublish}
+                  disabled={isPublishing}
+                  className="flex-1 bg-gradient-to-r from-orange-500 to-yellow-500 text-white py-2 rounded-lg font-medium hover:shadow-lg disabled:opacity-50"
+                >
+                  {isPublishing ? 'Publishing...' : 'Confirm'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ import StatusPage from './pages/StatusPage';
 import HelpPage from './pages/HelpPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import RoomPage from './pages/RoomPage';
 import ScrollToTop from './components/ScrollToTop';
 import './App.css';
 
@@ -40,6 +41,10 @@ function AppContent() {
           <Route 
             path="/editor/:gameId" 
             element={user?.type === 'creator' ? <GameEditor /> : <Navigate to="/auth" />} 
+          />
+          <Route 
+            path="/room/:roomId" 
+            element={user ? <RoomPage /> : <Navigate to="/auth" />} 
           />
           
           {/* 404 Page */}

@@ -65,11 +65,6 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  public endGame() {
-    this.physics.pause();
-    this.submitScore(this.score);
-  }
-
   private sendScoreToServer(score: number) {
     // TODO: Implement server-side score validation
     fetch('/api/submit-score', {
@@ -117,7 +112,11 @@ export class GameScene extends Phaser.Scene {
   }
 }
 
-export const createPhaserGame = (containerId: string, gameCode: string) => {
+export const createPhaserGame = (
+  containerId: string,
+  gameCode: string,
+  onSubmitScore?: (score: number) => void
+) => {
   const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     width: '100%',
@@ -142,6 +141,16 @@ export const createPhaserGame = (containerId: string, gameCode: string) => {
   const game = new Phaser.Game(config);
   game.scene.add('GameScene', GameScene);
   game.scene.start('GameScene', { gameCode });
+
+  // Attach optional submit callback after scene starts
+  try {
+    const scene = game.scene.getScene('GameScene') as unknown as GameScene;
+    if (scene && onSubmitScore) {
+      scene.submitScore = onSubmitScore;
+    }
+  } catch (e) {
+    console.warn('Could not attach submit callback to scene:', e);
+  }
   
   return game;
 };

@@ -23,6 +23,7 @@ export interface Player {
   walletAddress?: string;
   hasPaid: boolean;
   score?: number;
+  hasPlayed?: boolean;
 }
 
 export interface GameResult {
@@ -36,6 +37,7 @@ class TournamentService {
   private static instance: TournamentService;
   private rooms: Map<string, TournamentRoom> = new Map();
   private roomTimers: Map<string, NodeJS.Timeout> = new Map();
+  private roomHardDeleteTimers: Map<string, NodeJS.Timeout> = new Map();
 
   private constructor() {}
 
@@ -66,6 +68,7 @@ class TournamentService {
 
     this.rooms.set(roomId, room);
     this.startRoomTimer(roomId);
+    this.startHardDeleteTimer(roomId);
     
     return room;
   }
@@ -241,11 +244,30 @@ class TournamentService {
   }
 
   private startRoomTimer(roomId: string) {
+    // Soft threshold at 24 hours
     const timer = setTimeout(() => {
-      this.cancelRoom(roomId, 'Room expired');
-    }, 10 * 60 * 1000); // 10 minutes
+      const room = this.rooms.get(roomId);
+      if (!room) return;
+      const totalPlayers = room.maxPlayers;
+      const threshold = Math.ceil(totalPlayers / 3);
+      const playedCount = room.currentPlayers.filter(p => p.hasPlayed).length;
+      if (playedCount <= threshold) {
+        this.cancelRoom(roomId, 'Less than one-third of players participated within 24h');
+      } else {
+        // Persist until host resigns; no action here
+        console.log(`Room ${roomId} persists after 24h (played ${playedCount}/${totalPlayers}).`);
+      }
+    }, 24 * 60 * 60 * 1000);
 
     this.roomTimers.set(roomId, timer);
+  }
+
+  private startHardDeleteTimer(roomId: string) {
+    // Hard delete at 72 hours regardless
+    const timer = setTimeout(() => {
+      this.cancelRoom(roomId, 'Hard delete after 72h');
+    }, 72 * 60 * 60 * 1000);
+    this.roomHardDeleteTimers.set(roomId, timer);
   }
 
   private cancelRoom(roomId: string, reason: string) {
@@ -264,6 +286,11 @@ class TournamentService {
     if (timer) {
       clearTimeout(timer);
       this.roomTimers.delete(roomId);
+    }
+    const hardTimer = this.roomHardDeleteTimers.get(roomId);
+    if (hardTimer) {
+      clearTimeout(hardTimer);
+      this.roomHardDeleteTimers.delete(roomId);
     }
 
     this.rooms.delete(roomId);
@@ -310,6 +337,25 @@ class TournamentService {
       this.cancelRoom(roomId, 'All players left');
     }
 
+    return { success: true };
+  }
+
+  markPlayerPlayed(roomId: string, playerId: string, score?: number) {
+    const room = this.rooms.get(roomId);
+    if (!room) return;
+    const player = room.currentPlayers.find(p => p.id === playerId);
+    if (!player) return;
+    player.hasPlayed = true;
+    if (typeof score === 'number') {
+      player.score = score;
+    }
+  }
+
+  resignRoom(roomId: string, requesterId: string): { success: boolean; error?: string } {
+    const room = this.rooms.get(roomId);
+    if (!room) return { success: false, error: 'Room not found' };
+    if (room.hostId !== requesterId) return { success: false, error: 'Only host can resign' };
+    this.cancelRoom(roomId, 'Host resigned');
     return { success: true };
   }
 }

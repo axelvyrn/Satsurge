@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import { useRef, useState } from 'react';
 import { X, Users, Clock, Zap, Trophy, QrCode } from 'lucide-react';
-import { tournamentService, TournamentRoom } from '../utils/tournamentService';
+import { tournamentService } from '../utils/tournamentService';
 import { lightningService } from '../utils/lightningPayments';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { dbTournamentService } from '../utils/dbTournamentService';
 
 interface Tournament {
   id: string;
+  gameId: string;
   game: string;
   entryFee: number;
   pool: number;
@@ -21,11 +24,13 @@ interface TournamentModalProps {
 }
 
 export default function TournamentModal({ tournament, onClose }: TournamentModalProps) {
+  const navigate = useNavigate();
   const [showPayment, setShowPayment] = useState(false);
-  const [currentRoom, setCurrentRoom] = useState<TournamentRoom | null>(null);
+  const [devBypass] = useState(true);
   const [paymentInvoice, setPaymentInvoice] = useState<string>('');
   const [paymentStatus, setPaymentStatus] = useState<'waiting' | 'pending' | 'paid' | 'failed'>('waiting');
   const { user } = useAuth();
+  const phaserRef = useRef<HTMLDivElement>(null);
 
   const winnerAmount = Math.floor(tournament.pool * 0.75);
   const creatorFee = Math.floor(tournament.pool * 0.10);
@@ -34,13 +39,38 @@ export default function TournamentModal({ tournament, onClose }: TournamentModal
   const handleJoinTournament = async () => {
     if (!user) return;
 
-    // Create or join room
+    // Register join in DB (dev: free)
+    try {
+      await dbTournamentService.joinTournament(tournament.id);
+    } catch (e) {
+      console.error('Failed to join tournament in DB:', e);
+    }
+
+    const isSinglePlayer = tournament.maxPlayers <= 1;
+    const minPlayers = isSinglePlayer ? 1 : 2;
+
+    if (devBypass || tournament.entryFee === 0) {
+      // Create a transient room and navigate to it
+      const room = tournamentService.createRoom(
+        tournament.gameId,
+        tournament.game,
+        user.id,
+        tournament.entryFee,
+        minPlayers,
+        tournament.maxPlayers
+      );
+      navigate(`/room/${room.id}`, { state: { tournamentId: tournament.id, gameId: tournament.gameId } });
+      onClose();
+      return;
+    }
+
+    // Otherwise show payment flow (kept for future real payments)
     const room = tournamentService.createRoom(
-      tournament.id,
+      tournament.gameId,
       tournament.game,
       user.id,
       tournament.entryFee,
-      2, // min players
+      minPlayers,
       tournament.maxPlayers
     );
 
@@ -52,17 +82,13 @@ export default function TournamentModal({ tournament, onClose }: TournamentModal
     });
 
     if (joinResult.success && joinResult.room) {
-      setCurrentRoom(joinResult.room);
-      
-      // If room is in payment phase, show payment
+      // no-op; room navigation occurs via route
       if (joinResult.room.status === 'payment') {
         const invoice = joinResult.room.paymentInvoices[user.id];
         if (invoice) {
           setPaymentInvoice(invoice.paymentRequest);
           setShowPayment(true);
           setPaymentStatus('pending');
-          
-          // Start monitoring payment
           monitorPayment(invoice.paymentHash);
         }
       }
@@ -171,13 +197,25 @@ export default function TournamentModal({ tournament, onClose }: TournamentModal
               </div>
             </div>
 
+            {/* Dev Fee Bypass Notice */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-green-800 text-sm">Dev mode: Entry fee waived for now.</p>
+            </div>
+
             {/* Join Button */}
             <button
               onClick={handleJoinTournament}
               className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:shadow-lg transition-all duration-300"
             >
-              Join Tournament
+              {devBypass || tournament.entryFee === 0 ? 'Join & Play (Free)' : 'Join Tournament'}
             </button>
+
+            {/* Inline Game Surface (appears after join in dev mode) */}
+            <div className="mt-4">
+              <div id="player-phaser" ref={phaserRef} className="w-full h-72 bg-gray-100 rounded-lg flex items-center justify-center">
+                <span className="text-gray-500 text-sm">Game will load here after joining</span>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="p-6 space-y-6">

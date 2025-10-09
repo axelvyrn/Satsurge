@@ -79,7 +79,7 @@ export default function Documentation() {
               <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold">4</div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Publish & Earn</h3>
-                <p className="text-gray-700">Pay the 100 sats publishing fee and start earning 10% of all tournament entry fees.</p>
+                <p className="text-gray-700">Pay the 500 sats publishing fee and start earning 10% of all tournament entry fees.</p>
               </div>
             </div>
           </div>
@@ -275,7 +275,7 @@ This creates a 30-second clicking game where players earn 10 points per click!`}
           <div className="grid md:grid-cols-2 gap-8">
             <div>
               <h3 className="text-xl font-semibold mb-4 text-orange-100">Publishing Fee</h3>
-              <div className="text-3xl font-bold mb-2">100 sats</div>
+              <div className="text-3xl font-bold mb-2">500 sats</div>
               <p className="text-orange-100">One-time fee per game to cover hosting and validation costs</p>
             </div>
 
