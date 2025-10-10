@@ -593,11 +593,14 @@ export const createToolbox = () => {
           },
           {
             "kind": "block",
-            "type": "hide_sprite"
+            "type": "show_sprite"
           },
           {
             "kind": "block",
-            "type": "show_sprite"
+            "type": "hide_sprite"
+          },
+          {
+            "kind": "sep"
           }
         ]
       },
@@ -657,9 +660,6 @@ export const createToolbox = () => {
             "type": "repeat_forever"
           },
           {
-            "kind": "sep"
-          },
-          {
             "kind": "block",
             "type": "controls_if"
           },
@@ -682,14 +682,6 @@ export const createToolbox = () => {
           {
             "kind": "block",
             "type": "logic_boolean"
-          },
-          {
-            "kind": "block",
-            "type": "touching_sprite"
-          },
-          {
-            "kind": "block",
-            "type": "sprite_touching_edge"
           }
         ]
       },
@@ -743,9 +735,6 @@ export const createToolbox = () => {
           {
             "kind": "block",
             "type": "change_variable"
-          },
-          {
-            "kind": "sep"
           },
           {
             "kind": "block",
