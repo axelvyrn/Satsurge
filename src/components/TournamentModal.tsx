@@ -213,7 +213,7 @@ export default function TournamentModal({ tournament, onClose }: TournamentModal
             {/* Inline Game Surface (appears after join in dev mode) */}
             <div className="mt-4">
               <div id="player-phaser" ref={phaserRef} className="w-full h-72 bg-gray-100 rounded-lg flex items-center justify-center">
-                <span className="text-gray-500 text-sm">Game will load here after joining</span>
+                <span className="text-gray-500 text-sm">You will be redirected to the game room after joining</span>
               </div>
             </div>
           </div>
