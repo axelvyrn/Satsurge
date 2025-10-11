@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import {
   Zap,
   Trophy,
@@ -11,124 +10,22 @@ import {
   Bitcoin,
   Drill
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import logo from '../assets/satsurge.png';
 import backgroundVideo from '../assets/background.mp4';
-
-interface LightningBolt {
-  id: number;
-  x: number;
-  y: number;
-  segments: { x1: number; y1: number; x2: number; y2: number }[];
-}
+import { useLightningState } from '../animations/lightning';
 
 export default function HomePage() {
-  const [lightningBolts, setLightningBolts] = useState<LightningBolt[]>([]);
-
-  const generateLightningBolt = (startX: number, startY: number): { x1: number; y1: number; x2: number; y2: number }[] => {
-    const segments: { x1: number; y1: number; x2: number; y2: number }[] = [];
-    let currentX = startX;
-    let currentY = startY;
-    const targetY = window.innerHeight;
-    const segmentCount = Math.floor(Math.random() * 8) + 8;
-
-    for (let i = 0; i < segmentCount; i++) {
-      const nextX = currentX + (Math.random() - 0.5) * 100;
-      const nextY = currentY + (targetY - currentY) / (segmentCount - i) + Math.random() * 50;
-
-      segments.push({
-        x1: currentX,
-        y1: currentY,
-        x2: nextX,
-        y2: nextY
-      });
-
-      if (Math.random() > 0.7 && i < segmentCount - 2) {
-        const branchX = currentX + (Math.random() - 0.5) * 150;
-        const branchY = currentY + Math.random() * 100 + 50;
-        segments.push({
-          x1: currentX,
-          y1: currentY,
-          x2: branchX,
-          y2: branchY
-        });
-      }
-
-      currentX = nextX;
-      currentY = nextY;
-    }
-
-    return segments;
-  };
+  const { lightningBolts, triggerStrike } = useLightningState();
 
   const triggerLightning = (e: React.MouseEvent<HTMLElement>) => {
-    const x = Math.random() * window.innerWidth;
-    const y = 0;
-
-    const bolt: LightningBolt = {
-      id: Date.now() + Math.random(),
-      x,
-      y,
-      segments: generateLightningBolt(x, y)
-    };
-
-    setLightningBolts(prev => [...prev, bolt]);
-
-    setTimeout(() => {
-      setLightningBolts(prev => prev.filter(b => b.id !== bolt.id));
-    }, 1500);
+    triggerStrike();
   };
 
   return (
-    <div className="min-h-screen relative">
-      <AnimatePresence>
-        {lightningBolts.map(bolt => (
-          <motion.svg
-            key={bolt.id}
-            className="fixed inset-0 pointer-events-none z-50"
-            style={{ width: '100%', height: '100%' }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 1, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, times: [0, 0.1, 0.4, 1] }}
-          >
-            <defs>
-              <filter id={`glow-${bolt.id}`}>
-                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                <feMerge>
-                  <feMergeNode in="coloredBlur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-            {bolt.segments.map((segment, idx) => (
-              <motion.line
-                key={idx}
-                x1={segment.x1}
-                y1={segment.y1}
-                x2={segment.x2}
-                y2={segment.y2}
-                stroke="#FFD700"
-                strokeWidth={Math.random() * 2 + 3}
-                strokeLinecap="round"
-                filter={`url(#glow-${bolt.id})`}
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{
-                  pathLength: 1,
-                  opacity: [0, 1, 0.8, 0],
-                  stroke: ['#FFD700', '#FFFF00', '#FFD700', '#FFA500']
-                }}
-                transition={{
-                  duration: 0.15,
-                  delay: idx * 0.02,
-                  times: [0, 0.3, 0.7, 1]
-                }}
-              />
-            ))}
-          </motion.svg>
-        ))}
-      </AnimatePresence>
-      {/* Navigation */}
+    <>
+      <div className="min-h-screen relative">
+        {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-orange-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -144,13 +41,13 @@ export default function HomePage() {
             </div>
             
             <div className="hidden md:flex space-x-8">
-              <Link to="/about" className="text-gray-700 hover:text-orange-500 transition-colors">
+              <Link to="/about" onMouseEnter={triggerLightning} className="text-gray-700 hover:text-orange-500 transition-colors">
                 About
               </Link>
-              <Link to="/docs" className="text-gray-700 hover:text-orange-500 transition-colors">
+              <Link to="/docs" onMouseEnter={triggerLightning} className="text-gray-700 hover:text-orange-500 transition-colors">
                 Documentation
               </Link>
-              <Link to="/help" className="text-gray-700 hover:text-orange-500 transition-colors">
+              <Link to="/help" onMouseEnter={triggerLightning} className="text-gray-700 hover:text-orange-500 transition-colors">
                 Help
               </Link>
             </div>
@@ -291,6 +188,7 @@ export default function HomePage() {
             </div>
             <a
               href="/docs"
+              onMouseEnter={triggerLightning}
               className="ml-4 bg-white text-orange-500 px-8 py-4 rounded-full font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-orange-500"
             >
               Documentation
@@ -303,7 +201,7 @@ export default function HomePage() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4" onMouseEnter={triggerLightning}>
               Why Choose Satsurge?
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -360,7 +258,7 @@ export default function HomePage() {
       <section className="py-20 bg-gradient-to-br from-orange-50 to-yellow-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4" onMouseEnter={triggerLightning}>
               How It Works
             </h2>
             <p className="text-xl text-gray-600">
@@ -444,7 +342,7 @@ export default function HomePage() {
                 alt="Satsurge Logo" 
                 className="h-6 w-6 object-contain"
                 />
-                <span className="text-xl font-bold">Satsurge</span>
+                <span className="text-xl font-bold" onMouseEnter={triggerLightning}>Satsurge</span>
               </div>
               <p className="text-gray-400">
                 Lightning-powered skill gaming platform
@@ -465,7 +363,7 @@ export default function HomePage() {
               <ul className="space-y-2 text-gray-400">
                 <li><a href="#" className="hover:text-orange-400">Discord</a></li>
                 <li><a href="#" className="hover:text-orange-400">Twitter</a></li>
-                <li><a href="https://github.com/axelvyrn/Satsurge" className="hover:text-orange-400">GitHub</a></li>
+                <li><a href="https://github.com/axelvyrn/Satsurge" onMouseEnter={triggerLightning} className="hover:text-orange-400">GitHub</a></li>
               </ul>
             </div>
 
@@ -490,6 +388,8 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+      {lightningBolts}
+    </>
   );
 }
